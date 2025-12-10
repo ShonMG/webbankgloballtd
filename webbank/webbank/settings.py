@@ -35,6 +35,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 if DEBUG:
     ALLOWED_HOSTS.append('localhost')
     ALLOWED_HOSTS.append('127.0.0.1')
+    ALLOWED_HOSTS.append('webbankglobal.onrender.com')
 
 
 # Application definition

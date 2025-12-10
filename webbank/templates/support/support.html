@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4 content">
+    <!-- Heading -->
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Help & Support</h2>
+        <p class="text-muted">Get help with your SACCO account and services</p>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="info-card h-100">
+                <i class='bx bx-phone text-success'></i>
+                <h5 class="fw-semibold">Call Us</h5>
+                <p class="mb-0 text-muted">Mon–Fri 8AM–6PM</p>
+                <p class="fw-bold text-primary">+254 (123) 456-789</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="info-card h-100">
+                <i class='bx bx-envelope text-success'></i>
+                <h5 class="fw-semibold">Email Support</h5>
+                <p class="mb-0 text-muted">24/7 Response</p>
+                <p class="fw-bold text-primary">support@webbank.com</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="info-card h-100">
+                <i class='bx bx-message-reply text-success'></i>
+                <h5 class="fw-semibold">Live Chat</h5>
+                <p class="mb-2 text-muted">Instant Help</p>
+                <button class="btn btn-primary btn-sm">Start Chat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support Ticket Form -->
+    <div class="section-card">
+        <h5 class="fw-semibold mb-4"><i class='bx bx-clipboard-detail'></i> Submit a Support Ticket</h5>
+        <form method="post">
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <label class="form-label">Subject</label>
+                    {{ form.subject }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Category</label>
+                    {{ form.category }}
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Priority</label>
+                    {{ form.priority }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                {{ form.description }}
+            </div>
+
+            <button type="submit" class="btn btn-primary submit-btn">Submit Ticket</button>
+        </form>
+    </div>
+
+    <!-- My Support Tickets -->
+    <div class="section-box mt-4">
+        <h5 class="fw-semibold mb-4"><i class='bx bx-clock-2'></i> My Support Tickets</h5>
+
+        {% for ticket in user_tickets %}
+        <div class="ticket-card d-flex justify-content-between align-items-start flex-wrap">
+            <div>
+                <div class="ticket-title">
+                    {{ ticket.subject }}
+                    <span class="badge bg-light text-dark border ms-2">{{ ticket.ticket_id }}</span>
+                </div>
+                <div class="text-muted small">Created: {{ ticket.created_at|date:"Y-m-d" }}</div>
+                <div class="mt-1">
+                    <span class="badge 
+                        {% if ticket.priority == 'urgent' %}bg-danger
+                        {% elif ticket.priority == 'high' %}bg-warning text-dark
+                        {% elif ticket.priority == 'medium' %}bg-info
+                        {% else %}bg-secondary{% endif %}">
+                        {{ ticket.get_priority_display }}
+                    </span>
+                    <span class="badge 
+                        {% if ticket.status == 'resolved' %}bg-success
+                        {% elif ticket.status == 'in_progress' %}bg-primary
+                        {% else %}bg-secondary{% endif %}">
+                        {{ ticket.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
+                <a href="#"><i class="bi bi-box-arrow-up-right"></i></a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-4">
+            <i class='bx bx-clipboard text-muted' style="font-size: 3rem;"></i>
+            <h6 class="mt-2">No Support Tickets</h6>
+            <p class="text-muted">You haven't submitted any support tickets yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- FAQs Section -->
+    <div class="section-box">
+        <h5 class="fw-semibold mb-4"><i class='bx bx-message-circle-question-mark'></i> Frequently Asked Questions</h5>
+
+        <!-- Loans -->
+        <div class="faq-category"><i class='bxr bx-wallet-note text-success me-2 fs-3'></i>Loans</div>
+        <div class="faq-item">
+            <p class="faq-question">How do I apply for a loan?</p>
+            <p class="faq-answer">You can apply for a loan through your Loans page by clicking 'Apply for Loan'. Ensure you meet all eligibility criteria including minimum share contribution and good credit standing.</p>
+        </div>
+        <div class="faq-item">
+            <p class="faq-question">What documents do I need for a loan application?</p>
+            <p class="faq-answer">You'll need a valid ID, proof of income, bank statements, and collateral documents if applicable. For larger loans, additional guarantors may be required.</p>
+        </div>
+        <div class="faq-item">
+            <p class="faq-question">How long does loan approval take?</p>
+            <p class="faq-answer">Loan applications are typically processed within 5–7 business days after all required documents are submitted and verified by our credit committee.</p>
+        </div>
+        <hr>
+
+        <!-- Shares -->
+        <div class="faq-category"><i class='bxr bx-trending-up text-success me-2 fs-3'></i>Shares</div>
+        <div class="faq-item">
+            <p class="faq-question">How do I purchase shares?</p>
+            <p class="faq-answer">Navigate to the Shares section in your dashboard and select 'Purchase Shares'. Minimum purchase is KES 1,000 (10 units). Payments can be made via M-Pesa, bank transfer, or cash deposit.</p>
+        </div>
+        <div class="faq-item">
+            <p class="faq-question">When are dividends paid?</p>
+            <p class="faq-answer">Dividends are paid annually, typically in the first quarter of each year after the annual general meeting and financial audit.</p>
+        </div>
+        <div class="faq-item">
+            <p class="faq-question">Can I use shares as loan collateral?</p>
+            <p class="faq-answer">Yes, you can use your shares as collateral for loans up to 80% of their current value. This provides better interest rates and higher loan limits.</p>
+        </div>
+
+        <hr>
+
+        <!-- Account -->
+        <div class="faq-category"><i class='bxr bx-group text-success fs-3 me-2'></i>Account</div>
+        <div class="faq-item">
+            <p class="faq-question">How do I update my profile information?</p>
+            <p class="faq-answer">Go to your Profile page and click 'Edit Profile' to update your personal information. Some changes may require verification by our admin team.</p>
+        </div>
+        <div class="faq-item">
+            <p class="faq-question">How do I reset my password?</p>
+            <p class="faq-answer">Use the 'Forgot Password' link on the login page or visit Account Settings to change your password. You'll receive a reset link via email.</p>
+        </div>
+        <div class="faq-item">
+            <p class="faq-question">How do I become a guarantor?</p>
+            <p class="faq-answer">Contact our office to learn about guarantor requirements. You must be an active member in good standing with sufficient shares to qualify as a guarantor.</p>
+        </div>
+
+        <hr>
+
+        <!-- Security -->
+        <div class="faq-category"><i class='bx bx-info-shield text-success fs-3 me-2'></i> Security</div>
+        <div class="faq-item">
+            <p class="faq-question">Is my financial data secure?</p>
+            <p class="faq-answer">Yes, we use bank-level encryption and security measures to protect all member data and transactions. Our systems are regularly audited for security compliance.</p>
+        </div>
+        <div class="faq-item">
+            <p class="faq-question">How do I enable two-factor authentication?</p>
+            <p class="faq-answer">Go to Account Settings > Security & Privacy and toggle on Two-Factor Authentication. You'll receive verification codes via SMS for additional security.</p>
+        </div>
+        <div class="faq-item">
+            <p class="faq-question">What should I do if I suspect unauthorized access?</p>
+            <p class="faq-answer">Immediately contact our support team and change your password. We'll help secure your account and investigate any suspicious activity.</p>
+        </div>
+    </div>
+
+    <div class="resource-card">
+        <h6 class="fw-semibold mb-3">Additional Resources</h6>
+        <div class="row g-2">
+            <div class="col-md-6">
+                <a href="#" class="resource-btn"><i class='bx bx-clipboard-detail me-2'></i> User Manual</a>
+            </div>
+            <div class="col-md-6">
+                <a href="#" class="resource-btn"><i class='bx bx-arrow-out-up-right-stroke-square me-2'></i> SACCO Policies</a>
+            </div>
+            <div class="col-md-6">
+                <a href="#" class="resource-btn"><i class='bx bx-info-shield me-2'></i> Security Guidelines</a>
+            </div>
+            <div class="col-md-6">
+                <a href="#" class="resource-btn"><i class='bx bx-phone me-2'></i> Emergency Contacts</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

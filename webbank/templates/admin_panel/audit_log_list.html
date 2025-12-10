@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Audit Log{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Audit Log</h2>
+            <p class="text-muted">Review all actions taken by users on the platform for compliance and security.</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <h3 class="mb-0">Recent Audit Entries</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Timestamp</th>
+                                <th scope="col">User</th>
+                                <th scope="col">Action</th>
+                                <th scope="col">Details</th>
+                                <th scope="col">IP Address</th>
+                                <th scope="col">Affected Object</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in audit_logs %}
+                            <tr>
+                                <td>{{ log.action_time|date:"M d, Y H:i:s" }}</td>
+                                <td>{{ log.user.username|default:"System" }}</td>
+                                <td>{{ log.action }}</td>
+                                <td>{{ log.details|default:"N/A" }}</td>
+                                <td>{{ log.ip_address|default:"N/A" }}</td>
+                                <td>{% if log.object_repr %}{{ log.object_repr }}{% else %}N/A{% endif %}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6">No audit logs found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

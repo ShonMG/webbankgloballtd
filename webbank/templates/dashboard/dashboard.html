@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4"> {# Added container-fluid for consistent padding #}
+    <div class="context d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4"> {# Matches members.html context div #}
+        <div class="shares-text"> {# Uses shares-text for consistent styling #}
+            <h2>Welcome, {{ user.get_full_name|default:user.username }}!</h2>
+            <p class="text-muted fs-4">({{ user.get_user_type_display }})</p> {# Moved smaller text here #}
+        </div>
+        <div class="shares-button mt-2 mt-sm-0"> {# Consistent button structure (empty for now) #}
+            {# No button needed here, but keeping structure consistent #}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Shares Overview -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-1s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Shares</h5>
+                            <span class="h2 font-weight-bold mb-0">KES {{ total_shares|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Loans -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-2s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Active Loans</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ active_loans }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outstanding Loan Amount -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-3s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Outstanding Loan</h5>
+                            <span class="h2 font-weight-bold mb-0">KES {{ outstanding_loan_amount|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                                <i class="fas fa-money-check-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Available Credit -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-4s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Available Credit</h5>
+                            <span class="h2 font-weight-bold mb-0">KES {{ available_credit|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Recent Transactions -->
+        <div class="col-lg-6 mb-4 animate__animated animate__fadeInUp animate__delay-5s"> {# Adjusted to lg and added animation #}
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">Recent Share Transactions</h3>
+                        </div>
+                        <div class="col text-end"> {# Changed text-right to text-end for Bootstrap 5 #}
+                            <a href="{% url 'shares:transactions_history' %}" class="btn btn-sm btn-primary">See all</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Type</th>
+                                <th scope="col">Amount</th>
+                                <th scope="col">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>{{ transaction.get_transaction_type_display }}</td>
+                                <td>KES {{ transaction.amount|floatformat:2 }}</td>
+                                <td>{{ transaction.transaction_date|date:"M d, Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3">No recent transactions.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Loans List -->
+        <div class="col-lg-6 mb-4 animate__animated animate__fadeInUp animate__delay-5s"> {# Adjusted to lg and added animation #}
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">Your Active Loans</h3>
+                        </div>
+                        <div class="col text-end"> {# Changed text-right to text-end for Bootstrap 5 #}
+                            <a href="{% url 'loans:my_loans' %}" class="btn btn-sm btn-primary">See all</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Loan Type</th>
+                                <th scope="col">Amount</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in active_loans_list %}
+                            <tr>
+                                <td>{{ loan.loan_type.name }}</td>
+                                <td>KES {{ loan.amount_approved|floatformat:2 }}</td>
+                                <td>{{ loan.get_status_display }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3">No active loans.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.user_type == 'director' %}
+    <div class="row mt-4 animate__animated animate__fadeInUp"> {# Added animation #}
+        <div class="col-md-12">
+            <div class="card p-3">
+                <h3>Director Specific Content</h3>
+                <p>As a Director, you have additional responsibilities and oversight. You can view pending loan approvals for director review.</p>
+                <a href="{% url 'loans:director_loan_approvals' %}" class="btn btn-info">View Loan Approvals (Director)</a>
+                {# This URL might need to be created in the loans app urls.py #}
+            </div>
+        </div>
+    </div>
+    {% elif user.user_type == 'guarantor' %}
+    <div class="row mt-4 animate__animated animate__fadeInUp"> {# Added animation #}
+        <div class="col-md-12">
+            <div class="card p-3">
+                <h3>Guarantor Specific Content</h3>
+                <p>As a Guarantor, you may have pending guarantee requests or an overview of loans you have guaranteed.</p>
+                <a href="{% url 'guarantees:my_guarantees' %}" class="btn btn-info">View My Guarantees</a>
+                {# This URL might need to be created in the guarantees app urls.py #}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

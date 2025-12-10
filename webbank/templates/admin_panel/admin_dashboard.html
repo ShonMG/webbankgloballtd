@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4"> {# Added container-fluid for consistent padding #}
+    <div class="context d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4"> {# Matches members.html context div #}
+        <div class="shares-text"> {# Uses shares-text for consistent styling #}
+            <h2>Welcome to the Admin Dashboard, {{ user.get_full_name|default:user.username }}!</h2>
+            <p class="text-muted fs-4">({{ user.get_user_type_display }})</p> {# Moved smaller text here #}
+        </div>
+        <div class="shares-button mt-2 mt-sm-0"> {# Optional: Add a button here if needed, consistent with members.html #}
+            {# Example: <button class="btn btn-primary"><i class='bxr bx-plus'></i> Admin Action</button> #}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Total Members -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-1s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Members</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_members }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Loans -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-2s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Active Loans</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ active_loans }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Shares Value -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-3s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Shares Value</h5>
+                            <span class="h2 font-weight-bold mb-0">KES {{ total_shares|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Applications -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-4s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Pending Approvals</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ pending_applications }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Total SACCO Assets -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-1s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total SACCO Assets</h5>
+                            <span class="h2 font-weight-bold mb-0">KES {{ total_sacco_assets|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-primary text-white rounded-circle shadow">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loan Default Rate -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-2s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Loan Default Rate</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ loan_default_rate|floatformat:2 }}%</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-warning text-white rounded-circle shadow">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Interest Earned (Dividend Placeholder) -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-3s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Interest Earned</h5>
+                            <span class="h2 font-weight-bold mb-0">KES {{ total_interest_earned|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-success text-white rounded-circle shadow">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Recent Loan Applications Table -->
+        <div class="col-md-12 animate__animated animate__fadeInUp animate__delay-4s"> {# Added animation #}
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">Recent Loan Applications</h3>
+                        </div>
+                        <div class="col text-end"> {# Changed text-right to text-end for Bootstrap 5 #}
+                            <a href="{% url 'admin_panel:loan_approval_list' %}" class="btn btn-sm btn-primary">See all</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Applicant</th>
+                                <th scope="col">Loan Type</th>
+                                <th scope="col">Amount</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in recent_loans %}
+                            <tr>
+                                <td>{{ loan.member.get_full_name|default:loan.member.username }}</td>
+                                <td>{{ loan.loan_type.name }}</td>
+                                <td>KES {{ loan.amount_applied|floatformat:2 }}</td>
+                                <td>{{ loan.application_date|date:"M d, Y" }}</td>
+                                <td>{{ loan.get_status_display }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5">No recent loan applications.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

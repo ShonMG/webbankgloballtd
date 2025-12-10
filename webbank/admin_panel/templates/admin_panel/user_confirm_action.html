@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Action{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-{% if action == 'deactivate' %}danger{% else %}success{% endif %} text-white">
+                    <h5 class="mb-0">Confirm {{ action|title }} User</h5>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to {{ action }} user <strong>{{ user.username }}</strong>?</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-{% if action == 'deactivate' %}danger{% else %}success{% endif %} me-2">Confirm {{ action|title }}</button>
+                        <a href="{% url 'admin_panel:user_list' %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

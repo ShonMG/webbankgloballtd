@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="context d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4"> {# Matches members.html context div #}
+        <div class="shares-text"> {# Uses shares-text for consistent styling #}
+            <h2>My Profile</h2>
+            <p class="text-muted">Manage your personal information and preferences.</p> {# Added descriptive text #}
+        </div>
+        <div class="shares-button mt-2 mt-sm-0"> {# Consistent button structure #}
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
+        </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="card mb-4"> {# Standardized card #}
+        <div class="card-body"> {# Added card-body #}
+            <div class="d-flex align-items-center">
+                <div class="circle-avatar me-3">
+                    {% if user.first_name and user.last_name %}
+                        {{ user.first_name.0 }}{{ user.last_name.0 }}
+                    {% else %}
+                        {{ user.username.0|upper }}
+                    {% endif %}
+                </div>
+                <div>
+                    <h5 class="mb-0">{{ user.get_full_name|default:user.username }}</h5>
+                    <span class="profile-label">{{ user.get_user_type_display }}</span>
+                    <span class="profile-label {% if user.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                        {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                    </span><br>
+                    <small class="text-muted">Member ID: {{ user.member_id|default:"Not assigned" }}</small>
+                </div>
+                <div class="ms-auto">
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
+                </div>
+            </div>
+        </div> {# Close card-body #}
+    </div>
+
+    <!-- Contact Info -->
+    <div class="card mb-4"> {# Standardized card #}
+        <div class="card-body"> {# Added card-body #}
+            <h6 class="fw-bold mb-3"><i class='bx bx-contact-book fs-2'></i> Contact Information</h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <p class="mb-2"><i class="bi bi-envelope me-2"></i> {{ user.email|default:"Not provided" }}</p>
+                    <p><i class="bi bi-geo-alt me-2"></i> {{ user.address|default:"Address not provided" }}</p>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-2"><i class="bi bi-telephone me-2"></i> {{ user.phone_number|default:"Phone not provided" }}</p>
+                    <p><i class="bi bi-calendar me-2"></i> Member since {{ user.date_joined_sacco|date:"F Y"|default:user.date_joined|date:"F Y" }}</p>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-2"><i class="bi bi-person-badge me-2"></i> ID: {{ user.id_number|default:"Not provided" }}</p>
+                    {% if user.date_of_birth %}
+                    <p><i class="bi bi-cake me-2"></i> Born {{ user.date_of_birth|date:"F j, Y" }}</p>
+                    {% endif %}
+                    <p class="mb-2"><i class="fas fa-user-tie me-2"></i> Preferred Director: 
+                        {% if user.preferred_director %}
+                            {{ user.preferred_director.get_full_name|default:user.preferred_director.username }}
+                        {% else %}
+                            Not assigned
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div> {# Close card-body #}
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4"> {# Consistent row and margin #}
+        <div class="col-xl-3 col-md-6 mb-4"> {# Consistent col sizing #}
+            <div class="card card-stats"> {# Standardized card #}
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Shares</h5>
+                            <span class="h2 font-weight-bold mb-0">Ksh {{ total_shares_value|floatformat:2|default:"0.00" }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-success text-white rounded-circle shadow"> {# Adjusted bg-gradient #}
+                                <i class='bx bx-trending-up'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Active Loans</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ active_loans_count }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                                <i class='bxr bx-wallet-note'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Loan Amount</h5>
+                            <span class="h2 font-weight-bold mb-0">Ksh {{ outstanding_loan_amount|floatformat:2|default:"0.00" }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-warning text-white rounded-circle shadow">
+                                <i class='bx bx-dollar'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Credit Score</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ user.credit_score }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-primary text-white rounded-circle shadow">
+                                <i class='bx bx-credit-card-alt'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card mb-4"> {# Standardized card #}
+        <div class="card-body"> {# Added card-body #}
+            <h6 class="fw-bold mb-3">Quick Actions</h6>
+            <div class="row quick-actions">
+                <div class="col-md-4 mb-2">
+                    <a href="{% url 'loans:loans_dashboard' %}" class="btn btn-primary w-100">Apply For Loan</a>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <a href="{% url 'shares:shares_dashboard' %}" class="btn btn-success w-100">Purchase Shares</a>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <a href="{% url 'guarantees:guarantees_dashboard' %}" class="btn btn-outline-primary w-100">View Guarantees</a>
+                </div>
+            </div>
+        </div> {# Close card-body #}
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            {{ form.email }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone Number</label>
+                            {{ form.phone_number }}
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Address</label>
+                            {{ form.address }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">ID Number</label>
+                            {{ form.id_number }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date of Birth</label>
+                            {{ form.date_of_birth }}
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Preferred Director</label>
+                            {{ form.preferred_director }}
+                            <small class="form-text text-muted">Select a director you prefer to work with.</small>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Profile Picture</label>
+                            {{ form.profile_picture }}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

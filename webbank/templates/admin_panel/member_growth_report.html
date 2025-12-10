@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Member Growth Report{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Member Growth Report</h2>
+            <p class="text-muted">Track the growth of new members over time.</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Filter Options</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <label for="id_year" class="form-label">Select Year:</label>
+                    <select class="form-select" id="id_year" name="year">
+                        {% for year in available_years %}
+                        <option value="{{ year }}" {% if selected_year|as_int == year %}selected{% endif %}>{{ year }}</option>
+                        {% empty %}
+                        <option value="">No years available</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary mt-4">Apply Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">New Members Joined by Month ({{ selected_year }})</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="memberGrowthChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a href="{% url 'admin_panel:reporting_dashboard' %}" class="btn btn-secondary">Back to Reporting Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const memberGrowthData = JSON.parse('{{ members_by_month_data|json_script:"memberGrowthData" }}');
+        const labels = memberGrowthData.map(item => item.month);
+        const data = memberGrowthData.map(item => item.count);
+
+        if (document.getElementById('memberGrowthChart')) {
+            new Chart(document.getElementById('memberGrowthChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'New Members',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Monthly Member Growth'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Members'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

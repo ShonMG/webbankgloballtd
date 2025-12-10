@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Declared Dividends</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    {% if dividends %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Declaration Date</th>
+                                        <th>Effective Date</th>
+                                        <th>Dividend Rate</th>
+                                        <th>Tax Rate</th>
+                                        <th>Approved</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for dividend in dividends %}
+                                        <tr>
+                                            <td>{{ dividend.declaration_date }}</td>
+                                            <td>{{ dividend.effective_date }}</td>
+                                            <td>{{ dividend.dividend_rate|floatformat:2 }}%</td>
+                                            <td>{{ dividend.tax_rate|floatformat:2 }}%</td>
+                                            <td>
+                                                {% if dividend.is_approved %}
+                                                    <span class="badge bg-success">Yes</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark">No</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if not dividend.is_approved %}
+                                                    <a href="{% url 'shares:approve_dividend' dividend.id %}" class="btn btn-success btn-sm">Approve & Distribute</a>
+                                                {% else %}
+                                                    <span class="text-muted">Distributed</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p>No dividends have been declared yet.</p>
+                    {% endif %}
+                    <a href="{% url 'shares:declare_dividend' %}" class="btn btn-primary mt-3">Declare New Dividend</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Loan Performance Report{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Loan Performance Report</h2>
+            <p class="text-muted">Overview of loan application, approval, and repayment statuses.</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Filter Options</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-3">
+                    <label for="id_start_date" class="form-label">Start Date:</label>
+                    <input type="date" class="form-control" id="id_start_date" name="start_date" value="{{ selected_start_date }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="id_end_date" class="form-label">End Date:</label>
+                    <input type="date" class="form-control" id="id_end_date" name="end_date" value="{{ selected_end_date }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="id_loan_type" class="form-label">Loan Type:</label>
+                    <select class="form-select" id="id_loan_type" name="loan_type">
+                        <option value="">All Loan Types</option>
+                        {% for lt in all_loan_types %}
+                        <option value="{{ lt.id }}" {% if selected_loan_type|as_int == lt.id %}selected{% endif %}>{{ lt.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="id_status" class="form-label">Loan Status:</label>
+                    <select class="form-select" id="id_status" name="status">
+                        <option value="">All Statuses</option>
+                        {% for status_val, status_label in all_loan_statuses %}
+                        <option value="{{ status_val }}" {% if selected_status == status_val %}selected{% endif %}>{{ status_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary mt-4">Apply Filter</button>
+                </div>
+                <div class="col-md-2">
+                    <a href="{% url 'admin_panel:loan_performance_report' %}" class="btn btn-outline-secondary mt-4">Clear Filters</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Total Loans Count -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Loans (Filtered)</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_loans_count }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Amount Applied -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Applied Amount</h5>
+                            <span class="h2 font-weight-bold mb-0">KES {{ total_amount_applied|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                                <i class="fas fa-money-check-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Amount Approved -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Approved Amount</h5>
+                            <span class="h2 font-weight-bold mb-0">KES {{ total_amount_approved|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-success text-white rounded-circle shadow">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Average Interest Rate -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Avg. Interest Rate</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ avg_interest_rate|floatformat:2 }}%</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-primary text-white rounded-circle shadow">
+                                <i class="fas fa-percent"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Loans by Status Chart -->
+        <div class="col-xl-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Loan Distribution by Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="loanStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Loan Types -->
+        <div class="col-xl-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Top Loan Types (by Approved Amount)</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for lt in top_loan_types %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ lt.loan_type__name }}
+                            <span class="badge bg-primary rounded-pill">KES {{ lt.total_approved|floatformat:2 }}</span>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item">No loan types found for the selected filters.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a href="{% url 'admin_panel:reporting_dashboard' %}" class="btn btn-secondary">Back to Reporting Dashboard</a>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loanStatusData = JSON.parse('{{ loans_by_status|json_script:"loanStatusData" }}');
+        const labels = loanStatusData.map(item => item.status);
+        const data = loanStatusData.map(item => item.count);
+
+        if (document.getElementById('loanStatusChart')) {
+            new Chart(document.getElementById('loanStatusChart'), {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#007bff', // Active
+                            '#28a745', // Completed
+                            '#dc3545', // Defaulted
+                            '#ffc107', // Pending
+                            '#6c757d'  // Other
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Loan Status Distribution'
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

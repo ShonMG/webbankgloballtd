@@ -1,0 +1,561 @@
+:root {
+    --primary-color: #0d6efd; /* Bootstrap primary blue */
+    --secondary-color: #6c757d; /* Bootstrap secondary gray */
+    --success-color: #198754; /* Bootstrap success green */
+    --info-color: #0dcaf0; /* Bootstrap info cyan */
+    --warning-color: #ffc107; /* Bootstrap warning yellow */
+    --danger-color: #dc3545; /* Bootstrap danger red */
+    --light-color: #f8f9fa; /* Bootstrap light gray */
+    --dark-color: #212529; /* Bootstrap dark gray */
+
+    --bg-light-gray: #f8f9fa;
+    --text-dark: #333;
+    --text-muted: #6c757d;
+
+    --border-color: #e0e0e0;
+    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
+
+    --border-radius-sm: 5px;
+    --border-radius-md: 10px;
+    --border-radius-lg: 15px;
+
+    --transition-speed: 0.3s;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-dark);
+    background-color: var(--bg-light-gray);
+    padding-top: 56px; /* for fixed navbar space */
+}
+
+/* General Link & Button Transitions */
+a {
+    text-decoration: none;
+    color: var(--primary-color);
+    transition: color var(--transition-speed) ease, background-color var(--transition-speed) ease;
+}
+
+a:hover {
+    color: var(--dark-color);
+}
+
+.btn {
+    transition: all var(--transition-speed) ease;
+    border-radius: var(--border-radius-sm);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.card {
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-speed) ease;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+}
+
+/* Responsive Typography */
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+
+@media (min-width: 768px) {
+    h1 { font-size: 3rem; }
+    h2 { font-size: 2.5rem; }
+    h3 { font-size: 2rem; }
+    h4 { font-size: 1.75rem; }
+}
+@media (min-width: 992px) {
+    h1 { font-size: 3.5rem; }
+    h2 { font-size: 2.8rem; }
+    h3 { font-size: 2.25rem; }
+    h4 { font-size: 1.8rem; }
+}
+
+
+/* Navbar specific styles for responsiveness */
+.navbar {
+    box-shadow: var(--shadow-sm);
+    background-color: white !important; /* Ensure navbar background is white */
+}
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--dark-color) !important;
+}
+.navbar-brand .text-primary {
+    color: var(--primary-color) !important;
+}
+.navbar-nav .nav-link {
+    padding: 0.5rem 1rem;
+    color: var(--text-dark);
+}
+.navbar-nav .nav-link:hover {
+    color: var(--primary-color);
+}
+.navbar-nav .btn {
+    padding: 0.5rem 1.2rem;
+    font-size: 1rem;
+}
+.navbar .badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding: 0.35em 0.6em;
+    font-size: 0.75em;
+    line-height: 1;
+    border-radius: var(--border-radius-sm);
+}
+
+/* Sidebar Responsive adjustments */
+.sidebar {
+    position: fixed;
+    top: 56px; /* Below fixed navbar */
+    left: 0;
+    height: calc(100% - 56px); /* Adjust height */
+    width: 250px; /* Wider sidebar */
+    background-color: white;
+    border-right: 1px solid var(--border-color);
+    transform: translateX(-100%); /* Hidden by default on mobile */
+    transition: transform var(--transition-speed) ease-in-out, width var(--transition-speed) ease-in-out;
+    z-index: 1030; /* Above regular content */
+    padding-top: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.sidebar.show {
+    transform: translateX(0); /* Visible when toggled */
+}
+
+.sidebar .nav-link {
+    color: var(--text-dark);
+    padding: 10px 15px;
+    display: flex; /* For icon and text alignment */
+    align-items: center;
+    border-radius: var(--border-radius-sm);
+    margin: 5px 10px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar .nav-link i {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+.sidebar .nav-link:hover {
+    background-color: var(--light-color);
+    color: var(--primary-color);
+}
+
+.sidebar .nav-link.active {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+.sidebar .nav-link.active i {
+    color: white;
+}
+
+
+.content {
+    margin-left: 0; /* Default for mobile */
+    padding: 20px;
+    transition: margin-left var(--transition-speed) ease-in-out;
+    min-height: calc(100vh - 56px); /* Ensure content takes full height */
+}
+
+/* Desktop Sidebar */
+@media (min-width: 992px) { /* Laptops and desktops */
+    .sidebar {
+        transform: translateX(0); /* Always visible */
+        width: 250px; /* Fixed width */
+    }
+    .content {
+        margin-left: 250px; /* Make space for sidebar */
+    }
+}
+
+/* Mobile Sidebar Overlay */
+@media (max-width: 991.98px) { /* Tablets and smaller */
+    .sidebar.show {
+        width: 250px; /* Ensure mobile sidebar has a width when shown */
+    }
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1029; /* Below sidebar, above content */
+        display: none;
+    }
+    .sidebar.show ~ .sidebar-overlay {
+        display: block;
+    }
+}
+
+.profile-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Dashboard Specific Styles (Refined) */
+.card-stats {
+    text-align: left;
+}
+.card-stats .icon {
+    width: 48px;
+    height: 48px;
+    line-height: 48px;
+    text-align: center;
+    border-radius: 50%;
+    font-size: 1.5rem;
+}
+.card-stats .icon i {
+    line-height: 48px;
+}
+
+/* Alerts */
+.alert {
+    border-radius: var(--border-radius-sm);
+}
+
+/* Forms */
+.form-control, .form-select {
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 0.75rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(var(--primary-color-rgb), 0.25);
+}
+
+/* Utility Classes for Animations */
+.fade-in {
+    animation: fadeIn var(--transition-speed) ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in-left {
+    animation: slideInLeft var(--transition-speed) ease-out forwards;
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Specific component overrides/fixes */
+.loan-icon {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px;
+    border-radius: var(--border-radius-sm);
+}
+.loan-icon i{
+    font-size: 20px;
+    font-weight: bold;
+}
+.repayment-bar {
+    height: 8px;
+    background-color: var(--light-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.repayment-progress {
+    background-color: var(--primary-color);
+    height: 100%;
+}
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+.status-active {
+    background-color: var(--dark-color);
+    color: white;
+}
+.status-pending {
+    background-color: var(--light-color);
+    color: var(--text-dark);
+}
+
+.main-content {
+    padding-left: 15px; /* Adjust as needed for spacing */
+    padding-right: 15px;
+}
+
+@media (min-width: 992px) {
+    .share-container, .main-content {
+        max-width: calc(100% - 250px); /* Adjust for fixed sidebar */
+    }
+}
+@media (max-width: 991.98px) {
+    .share-container, .main-content {
+        padding-top: 15px; /* Add some top padding for mobile */
+    }
+}
+
+.tab-button.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+.tab-button:hover:not(.active) {
+    background-color: var(--success-color);
+    color: white;
+}
+
+/* Remove conflicting duplicate .card style */
+/* The general .card rule at the top is sufficient */
+.card {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* More pronounced shadow for modern feel */
+}
+
+/* Specific fixes for elements previously defined with less modern styles */
+.btn-dark {
+    background-color: var(--dark-color);
+    border: none;
+}
+.btn-dark:hover {
+    background-color: #1e293b; /* A slightly lighter dark for hover */
+}
+.profile-label {
+    background-color: var(--primary-color);
+    color: white;
+}
+.info-card i {
+    color: var(--primary-color);
+}
+.faq-item {
+    border-left: 4px solid var(--primary-color);
+}
+.resource-btn {
+    background-color: var(--light-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-dark);
+}
+.resource-btn:hover {
+    background-color: #e9ecef;
+}
+
+/* Adjustments for the dashboard context and banner */
+.context {
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, var(--primary-color), #4CAF50); /* Example gradient */
+    color: white;
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+}
+.context h2, .context p {
+    color: white;
+}
+
+.username {
+    background-color: rgba(255,255,255,0.1); /* Lighter background for white text */
+    padding: 8px 12px;
+    border-radius: var(--border-radius-md);
+    display: inline-flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.banner {
+    color: #fff;
+}
+.banner h3 {
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+.banner p {
+    font-size: 0.9rem;
+}
+
+.date {
+    background-color: rgba(255,255,255,0.2);
+    color: white;
+    padding: 5px 10px;
+    border-radius: var(--border-radius-lg);
+    font-size: 0.8rem;
+}
+
+.btn-group {
+    /* Assuming this is a group of small action buttons, refine as needed */
+    gap: 0.5rem;
+    height: auto;
+    width: auto;
+}
+
+/* Specific color classes for card icons in dashboard summaries */
+.bg-gradient-red { background: linear-gradient(to right, #e74c3c, #c0392b) !important; }
+.bg-gradient-orange { background: linear-gradient(to right, #f39c12, #e67e22) !important; }
+.bg-gradient-green { background: linear-gradient(to right, #2ecc71, #27ae60) !important; }
+.bg-gradient-info { background: linear-gradient(to right, #3498db, #2980b9) !important; }
+.bg-gradient-primary { background: linear-gradient(to right, var(--primary-color), #0a58ca) !important; }
+.bg-gradient-purple { background: linear-gradient(to right, #9b59b6, #8e44ad) !important; }
+.bg-gradient-blue { background: linear-gradient(to right, #3498db, #2980b9) !important; }
+.bg-gradient-warning { background: linear-gradient(to right, #f39c12, #e67e22) !important; } /* Re-using orange for warning */
+
+
+/* Animations */
+.animate__animated {
+    animation-duration: 0.5s;
+    animation-fill-mode: both;
+}
+.animate__fadeInUp {
+    animation-name: fadeInUp;
+}
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 20px, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+.animate__delay-1s { animation-delay: 0.1s; }
+.animate__delay-2s { animation-delay: 0.2s; }
+.animate__delay-3s { animation-delay: 0.3s; }
+.animate__delay-4s { animation-delay: 0.4s; }
+.animate__delay-5s { animation-delay: 0.5s; }
+
+/* Remove old conflicting styles or redundant definitions */
+/* .sidebar definitions are consolidated above */
+/* .card definitions are consolidated above */
+/* .btn-dark is refined above */
+/* .form-select, .form-control are refined above */
+/* .user-tab, .activity-card, etc. need to use CSS variables where appropriate */
+
+.user-tab {
+    background-color: var(--light-color);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    border: 1px solid var(--border-color);
+    font-weight: 500;
+    border-radius: var(--border-radius-sm);
+}
+
+.user-tab:hover {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.user-tab.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.activity-card {
+    border-left: 5px solid transparent;
+    border-radius: var(--border-radius-md);
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    background-color: white; /* Ensure consistent background */
+    box-shadow: var(--shadow-sm);
+}
+.loan-payment {
+    border-left-color: var(--success-color);
+}
+.share-purchase {
+    border-left-color: var(--info-color);
+}
+.guarantee-request {
+    border-left-color: var(--warning-color);
+}
+.status-pill {
+    background-color: var(--warning-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+.status-active {
+    background-color: var(--dark-color);
+    color: white;
+}
+.status-pending {
+    background-color: var(--light-color);
+    color: var(--text-dark);
+}
+
+.demo-mode{
+    padding: 15px;
+    background-color: #d1f1dc; /* light green */
+    border-radius: var(--border-radius-md);
+    border: 1px solid #baeecc;
+    z-index: 1000;
+    box-shadow: var(--shadow-sm);
+}
+
+.demo-mode h3{
+    color: var(--success-color);
+}
+
+.ticket-card, .section-box, .resource-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 15px 20px;
+    background-color: white;
+    box-shadow: var(--shadow-sm);
+}
+.faq-item {
+    border-left: 4px solid var(--primary-color);
+}
+
+/* Landing Page Styles - ensure consistency */
+#about h2, #services h2, #affiliates h2, #how-it-works h2, #loan-calculator h2, #testimonials h2 {
+    color: var(--dark-color);
+}
+#services .card {
+    border: 1px solid var(--border-color); /* Add border for consistency */
+    box-shadow: var(--shadow-sm);
+}
+#services .card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+#services .card-title {
+    color: var(--dark-color);
+}

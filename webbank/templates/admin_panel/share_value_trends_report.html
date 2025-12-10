@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Share Value Trends Report{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Share Value Trends Report</h2>
+            <p class="text-muted">Analyze the changes in total share value over time.</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Filter Options</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <label for="id_year" class="form-label">Select Year:</label>
+                    <select class="form-select" id="id_year" name="year">
+                        {% for year in available_years %}
+                        <option value="{{ year }}" {% if selected_year|as_int == year %}selected{% endif %}>{{ year }}</option>
+                        {% empty %}
+                        <option value="">No years available</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary mt-4">Apply Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Share Value by Month ({{ selected_year }})</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="shareValueTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a href="{% url 'admin_panel:reporting_dashboard' %}" class="btn btn-secondary">Back to Reporting Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const shareValueData = JSON.parse('{{ share_value_data|json_script:"shareValueData" }}');
+        const labels = shareValueData.map(item => item.month);
+        const data = shareValueData.map(item => parseFloat(item.value)); // Ensure numeric data
+
+        if (document.getElementById('shareValueTrendChart')) {
+            new Chart(document.getElementById('shareValueTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Share Value (KES)',
+                        data: data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Monthly Share Value Trend'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Total Share Value (KES)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

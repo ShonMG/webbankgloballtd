@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Founder Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4"> {# Added container-fluid for consistent padding #}
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="display-5 text-dark mb-2">Welcome to the Founder Dashboard, {{ user.get_full_name|default:user.username }}! <span class="text-muted fs-4">({{ user.get_user_type_display }})</span></h2>
+            <p class="lead text-muted mb-4">You have full control over WebBank and manage the organizational hierarchy.</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Total Members -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-1s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Members</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_members }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Directors -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-2s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Directors</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_directors }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Admins -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-3s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total System Admins</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_admins }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Guarantors -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-4s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Guarantors</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_guarantors }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Total Loans -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-1s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Loans</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_loans }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-purple text-white rounded-circle shadow">
+                                <i class="fas fa-money-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Shares Value -->
+        <div class="col-xl-3 col-md-6 mb-4 animate__animated animate__fadeInUp animate__delay-2s"> {# Added animation classes #}
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Shares Value</h5>
+                            <span class="h2 font-weight-bold mb-0">KES {{ total_shares_value|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-blue text-white rounded-circle shadow">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 animate__animated animate__fadeInUp"> {# Added animation #}
+        <div class="col-md-12">
+            <h3>Founder Actions & Management</h3>
+            <div class="row mt-3">
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <a href="{% url 'admin_panel:user_list' %}" class="list-group-item list-group-item-action h-100 d-flex align-items-center">
+                        <i class="fas fa-user-plus me-2 text-primary"></i> Create and Assign Directors
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <a href="{% url 'admin_panel:user_list' %}" class="list-group-item list-group-item-action h-100 d-flex align-items-center">
+                        <i class="fas fa-users-cog me-2 text-primary"></i> Oversee Managers and Members
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <a href="#" class="list-group-item list-group-item-action h-100 d-flex align-items-center">
+                        <i class="fas fa-check-double me-2 text-primary"></i> Approve Final Loan Applications
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <a href="{% url 'admin_panel:user_list' %}" class="list-group-item list-group-item-action h-100 d-flex align-items-center">
+                        <i class="fas fa-id-badge me-2 text-primary"></i> Assign Roles and Permissions
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <a href="#" class="list-group-item list-group-item-action h-100 d-flex align-items-center">
+                        <i class="fas fa-balance-scale-right me-2 text-primary"></i> Handle Escalations and Disputes
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-3">
+                    <a href="{% url 'admin_panel:system_config_panel' %}" class="list-group-item list-group-item-action h-100 d-flex align-items-center">
+                        <i class="fas fa-cogs me-2 text-primary"></i> System Configuration (Full Access)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

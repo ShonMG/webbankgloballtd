@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container">
+    <!-- Top Bar -->
+    <div class="context d-flex justify-content-between align-items-center">
+        <div class="shares-text">
+            <h2>Directors Dashboard</h2>
+            <p>Strategic oversight and critical decision management</p>
+        </div>
+        <div class="shares-button">
+            <button class="btn btn-primary">Make a Comment</button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted">Total Members</div>
+                    <div class="fw-bold fs-5">{{ total_members }}</div>
+                    <div class="text-success small">+{{ total_members|divide:100|floatformat:1 }}% from last month</div>
+                </div>
+                <i class='bxr bx-group fs-3 text-primary'></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted">Active Loans</div>
+                    <div class="fw-bold fs-5">{{ active_loans }}</div>
+                    <div class="text-success small">+{{ active_loans|divide:100|floatformat:1 }}% from last month</div>
+                </div>
+                <i class='bxr bx-wallet-note fs-3 text-success'></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted">Total Shares</div>
+                    <div class="fw-bold fs-5">Ksh {{ total_shares|floatformat:2 }}</div>
+                    <div class="text-success small">+{{ total_shares|divide:10000|floatformat:1 }}% from last month</div>
+                </div>
+                <i class='bxr bx-trending-up fs-3 text-info'></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted">Pending Director Approvals</div>
+                    <div class="fw-bold fs-5">{{ pending_applications }}</div>
+                    <div class="text-success small">+{{ pending_applications|divide:10|floatformat:1 }}% from last month</div>
+                </div>
+                <i class="bi bi-exclamation-circle fs-3 text-warning"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted">Total Assets</div>
+                        <div class="fw-bold fs-5">Ksh {{ total_shares|multiply:1.5|floatformat:2 }}</div>
+                        <div class="text-success small">+12.5% from last quarter</div>
+                    </div>
+                    <i class="bi bi-building fs-3 text-primary"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted">Member Growth</div>
+                        <div class="fw-bold fs-5">{{ total_members }}</div>
+                        <div class="text-success small">+8.2% from last quarter</div>
+                    </div>
+                    <i class="bi bi-person-plus fs-3 text-success"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted">Loan Portfolio</div>
+                        <div class="fw-bold fs-5">Ksh {{ total_shares|multiply:0.8|floatformat:2 }}</div>
+                        <div class="text-success small">+15.3% from last quarter</div>
+                    </div>
+                    <i class="bi bi-graph-up fs-3 text-info"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted">Risk Ratio</div>
+                        <div class="fw-bold fs-5">2.3%</div>
+                        <div class="text-danger small">-0.5% from last quarter</div>
+                    </div>
+                    <i class="bi bi-exclamation-circle fs-3 text-warning"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow-sm mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold">Pending Director Approvals</h5>
+                <div>
+                    <a href="{% url 'directors:loan_approval_list' %}" class="btn btn-outline-secondary"><i class="bi bi-clock-history me-1"></i> View All</a>
+                </div>
+            </div>
+
+            {% for loan in pending_loans %}
+            <div class="border rounded p-3 mb-3">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="fw-bold mb-1">
+                            {{ loan.loan_type.name }} Application 
+                            <span class="badge 
+                                {% if loan.approval_stage == 'pending_director' %}bg-warning text-dark
+                                {% elif loan.approval_stage == 'approved' %}bg-success
+                                {% else %}bg-secondary{% endif %} ms-2">
+                                {{ loan.get_approval_stage_display }}
+                            </span>
+                        </h6>
+                        <small class="text-muted">{{ loan.member.get_full_name }} • {{ loan.application_date|date:"Y-m-d" }}</small>
+                        <p class="mb-1">{{ loan.purpose|truncatewords:10 }}</p>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-dark">Ksh {{ loan.amount_applied|floatformat:2 }}</div>
+                        <div class="text-muted small">{{ loan.loan_id }}</div>
+                        <div class="mt-2">
+                            <a href="{% url 'directors:loan_approval_detail' loan.id %}" class="btn btn-outline-primary btn-sm me-2"><i class="bi bi-check-circle me-1"></i> Review</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+                <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                <h6 class="mt-2">No Pending Decisions</h6>
+                <p class="text-muted">All current applications have been processed.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Director Quick Actions -->
+        <div class="row g-2">
+            <div class="col-md-6">
+                <div class="border rounded p-4 h-100">
+                    <h4 class="fw-bold text-muted">Portfolio Performance</h4>
+                    <small class="text-muted d-block mb-3">Loan and investment performance trends</small>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <p class="text-muted mb-0">Performing Loans</p>
+                        <span class="fw-bold text-success">94.2%</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <p class="text-muted mb-0">Non-Performing Loans</p>
+                        <span class="fw-bold text-warning">3.5%</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <p class="text-muted mb-0">Default Rate</p>
+                        <span class="fw-bold text-danger">2.3%</span>
+                    </div>
+
+                    <button class="btn btn-primary w-100">
+                        View Detailed Report
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="border rounded p-4 h-100">
+                    <h4 class="fw-bold text-muted">Member Satisfaction</h4>
+                    <small class="text-muted d-block mb-3">Service quality and member feedback</small>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <p class="text-muted mb-0">Overall Satisfaction</p>
+                        <span class="fw-bold text-success">4.7/5.0</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <p class="text-muted mb-0">Service Timeliness</p>
+                        <span class="fw-bold text-success">4.5/5.0</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <p class="text-muted mb-0">Support Responsiveness</p>
+                        <span class="fw-bold text-primary">4.6/5.0</span>
+                    </div>
+
+                    <button class="btn btn-primary w-100">
+                        View Feedback Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

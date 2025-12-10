@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container">
+    <!-- Top Bar -->
+    <div class="context d-flex justify-content-between align-items-center">
+        <div class="shares-text">
+            <h2>Admin Dashboard</h2>
+            <p>Overview of SACCO operations and key metrics</p>
+        </div>
+        <div class="shares-button">
+            <button class="btn btn-primary">Schedule Meeting</button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted">Total Members</div>
+                    <div class="fw-bold fs-5">{{ total_members }}</div>
+                    <div class="text-success small">+{{ total_members|divide:100|floatformat:1 }}% from last month</div>
+                </div>
+                <i class='bxr bx-group fs-3 text-primary'></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted">Active Loans</div>
+                    <div class="fw-bold fs-5">{{ active_loans }}</div>
+                    <div class="text-success small">+{{ active_loans|divide:100|floatformat:1 }}% from last month</div>
+                </div>
+                <i class='bxr bx-wallet-note fs-3 text-success'></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted">Total Shares</div>
+                    <div class="fw-bold fs-5">Ksh {{ total_shares|floatformat:2 }}</div>
+                    <div class="text-success small">+{{ total_shares|divide:10000|floatformat:1 }}% from last month</div>
+                </div>
+                <i class='bxr bx-trending-up fs-3 text-info'></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted">Pending Manager Approvals</div>
+                    <div class="fw-bold fs-5">{{ pending_applications }}</div>
+                    <div class="text-success small">+{{ pending_applications|divide:10|floatformat:1 }}% from last month</div>
+                </div>
+                <i class="bi bi-exclamation-circle fs-3 text-warning"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted">Total Assets</div>
+                        <div class="fw-bold fs-5">Ksh {{ total_shares|multiply:1.5|floatformat:2 }}</div>
+                        <div class="text-success small">+12.5% from last quarter</div>
+                    </div>
+                    <i class="bi bi-building fs-3 text-primary"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted">Member Growth</div>
+                        <div class="fw-bold fs-5">{{ total_members }}</div>
+                        <div class="text-success small">+8.2% from last quarter</div>
+                    </div>
+                    <i class="bi bi-person-plus fs-3 text-success"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted">Loan Portfolio</div>
+                        <div class="fw-bold fs-5">Ksh {{ total_shares|multiply:0.8|floatformat:2 }}</div>
+                        <div class="text-success small">+15.3% from last quarter</div>
+                    </div>
+                    <i class="bi bi-graph-up fs-3 text-info"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="bg-white p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted">Risk Ratio</div>
+                        <div class="fw-bold fs-5">2.3%</div>
+                        <div class="text-danger small">-0.5% from last quarter</div>
+                    </div>
+                    <i class="bi bi-exclamation-circle fs-3 text-warning"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Loan Applications Section -->
+        <div class="card p-4 mb-4">
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Recent Loan Applications</h5>
+                    <small class="text-muted">Latest loan applications requiring review</small>
+                </div>
+                <a href="{% url 'admin_panel:loan_approval_list' %}" class="btn btn-outline-secondary mt-2 mt-md-0">
+                    <i class="bi bi-file-earmark-text"></i> View All
+                </a>
+            </div>
+
+            <!-- Loan Cards -->
+            {% for loan in recent_loans %}
+            <div class="border rounded p-3 mb-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                    <div class="mb-2 mb-md-0">
+                        <h6 class="fw-bold mb-0">{{ loan.member.get_full_name }}</h6>
+                        <small class="text-muted">{{ loan.loan_type.name }} • {{ loan.application_date|date:"Y-m-d" }}</small>
+                    </div>
+                    <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 text-md-end">
+                        <div class="fw-bold">
+                            Ksh {{ loan.amount_applied|floatformat:2 }}
+                            <div><small class="text-muted">{{ loan.loan_id }}</small></div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge 
+                                {% if loan.approval_stage == 'pending_manager' %}bg-warning text-dark
+                                {% elif loan.approval_stage == 'pending_director' %}bg-info text-white
+                                {% elif loan.approval_stage == 'approved' %}bg-success
+                                {% else %}bg-danger{% endif %}">
+                                {{ loan.get_approval_stage_display }}
+                            </span>
+                            <a href="{% url 'admin_panel:loan_approval_detail' loan.id %}" class="btn btn-outline-primary btn-sm">Review</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+                <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                <h6 class="mt-2">No Pending Applications</h6>
+                <p class="text-muted">All loan applications have been processed.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Admin Quick Actions -->
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="border rounded p-4 h-100">
+                    <h6 class="fw-bold">Member Management</h6>
+                    <small class="text-muted d-block mb-3">Approve new members and manage existing ones</small>
+                    <a href="{% url 'members:members_dashboard' %}" class="btn btn-primary w-100">
+                        <i class="bi bi-person-plus me-1"></i> Manage Members
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="border rounded p-4 h-100">
+                    <h6 class="fw-bold">Loan Processing</h6>
+                    <small class="text-muted d-block mb-3">Review and process loan applications</small>
+                    <a href="{% url 'admin_panel:loan_approval_list' %}" class="btn btn-primary w-100">
+                        <i class="bi bi-credit-card me-1"></i> Review Loans
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="border rounded p-4 h-100">
+                    <h6 class="fw-bold">Financial Reports</h6>
+                    <small class="text-muted d-block mb-3">Generate and view financial reports</small>
+                    <button class="btn btn-primary w-100">
+                        <i class="bi bi-currency-dollar me-1"></i> View Reports
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Panels -->
+        <div class="card p-4 mt-4">
+            <h5 class="fw-bold mb-3">Configuration Panels</h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="{% url 'admin_panel:loan_config_panel' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-cash-stack me-1"></i> Loan Configuration
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'admin_panel:share_config_panel' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-graph-up me-1"></i> Share Configuration
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'admin_panel:system_config_panel' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-gear me-1"></i> System Parameters
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

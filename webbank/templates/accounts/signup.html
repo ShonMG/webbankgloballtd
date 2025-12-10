@@ -1,0 +1,91 @@
+{% extends 'auth_base.html' %}
+{% load static %}
+
+{% block title %}Sign Up - WebBank{% endblock %}
+
+{% block content %}
+    <div class="card p-4" style="max-width: 500px; width: 100%;">
+        <div class="text-center mb-4">
+            <h5 class="fw-bold">WebBank Sign Up</h5>
+            <p class="text-muted mb-0">Create your account to join the SACCO</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.errors }}
+            <div class="row mb-3">
+                <div class="col">
+                    <label class="form-label">First Name</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="col">
+                    <label class="form-label">Last Name</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Phone Number</label>
+                {{ form.phone_number }}
+            </div>
+
+
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <div class="input-group">
+                    {{ form.password }}
+                    <span class="input-group-text toggle-password" style="cursor: pointer;" data-target="id_password"><i class="bi bi-eye-fill"></i></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Confirm Password</label>
+                <div class="input-group">
+                    {{ form.password2 }}
+                    <span class="input-group-text toggle-password" style="cursor: pointer;" data-target="id_password2"><i class="bi bi-eye-fill"></i></span>
+                </div>
+            </div>
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-dark">Create Account</button>
+            </div>
+
+            <div class="text-center">
+                <small class="text-muted">Already have an account? <a href="{% url 'accounts:signin' %}" class="text-primary">Sign in</a></small>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.toggle-password').forEach(function(toggle) {
+            toggle.addEventListener('click', function() {
+                const targetId = this.dataset.target;
+                const passwordField = document.getElementById(targetId);
+                const icon = this.querySelector('i'); // Get the icon element
+                if (passwordField && icon) {
+                    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordField.setAttribute('type', type);
+
+                    // Toggle icon classes
+                    if (type === 'password') {
+                        icon.classList.remove('bi-eye-slash-fill');
+                        icon.classList.add('bi-eye-fill');
+                    } else {
+                        icon.classList.remove('bi-eye-fill');
+                        icon.classList.add('bi-eye-slash-fill');
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="context d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4"> {# Matches members.html context div #}
+        <div class="shares-text"> {# Uses shares-text for consistent styling #}
+            <h2>Shares Portfolio</h2>
+            <p class="text-muted">Track your ownership and contributions</p>
+        </div>
+        <div class="shares-button mt-2 mt-sm-0"> {# Consistent button structure #}
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#sharePurchaseModal">
+                <i class='bxr bx-plus'></i> Buy Shares
+            </button>
+        </div>
+    </div>
+
+    <!-- Top Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Shares</h5>
+                            <span class="h2 font-weight-bold mb-0">Ksh {{ total_value|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-success text-white rounded-circle shadow">
+                                <i class='bxr bx-gem'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Units Owned</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_units }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                                <i class='bxr bx-chart-bar-columns'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Price per Unit</h5>
+                            <span class="h2 font-weight-bold mb-0">KSH 100</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-warning text-white rounded-circle shadow">
+                                <i class='bxr bx-dollar'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Ownership</h5>
+                            <span class="h2 font-weight-bold mb-0"> 
+                                {% if total_value > 0 %}
+                                {% widthratio total_value total_share_cap 100 %}%
+                                {% else %}0%{% endif %}
+                            </span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-danger text-white rounded-circle shadow">
+                                <i class='bxr bx-medal-star-alt-2'></i> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- Share Goal Progress -->
+        <div class="col-md-6">
+            <div class="card mb-4"> {# Standardized card #}
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-bullseye me-2"></i> Share Goal Progress</h5>
+                    
+                    {# Display current monthly target, if set #}
+                    {% if share.monthly_share_target and share.monthly_share_target > 0 %}
+                    <p class="mb-1">Your current monthly target: <span class="float-end fw-bold">KES {{ share.monthly_share_target|floatformat:2 }}</span></p>
+                    {# This progress bar can be enhanced later to show actual monthly contributions vs target #}
+                    <div class="progress mb-2" style="height: 10px;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <small class="text-muted">No monthly progress tracked yet</small>
+                        <small class="text-muted">Target for this month</small>
+                    </div>
+                    {% else %}
+                    <p class="mb-1 text-muted">No monthly share target set yet.</p>
+                    <p class="text-muted">Set a goal to track your progress!</p>
+                    {% endif %}
+
+                    {# Overall progress to overall_target #}
+                    <p class="mb-1 mt-3">Overall progress to KES {{ overall_target|floatformat:2 }} <span class="float-end fw-bold">
+                        {% if total_value > 0 %}
+                        {% widthratio total_value overall_target 100 %}%
+                        {% else %}0%{% endif %}
+                    </span></p>
+                    <div class="progress mb-2" style="height: 10px;">
+                        <div class="progress-bar bg-primary" style="width: {% widthratio total_value overall_target 100 %}%;"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <small class="text-muted">KES {{ total_value|floatformat:2 }} achieved</small>
+                        <small class="text-muted">KES {{ overall_target|subtract:total_value|floatformat:2 }} remaining</small>
+                    </div>
+                    
+                    <button class="btn btn-outline-primary w-100 mt-2" data-bs-toggle="modal" data-bs-target="#setShareGoalModal">Set/Update Monthly Goal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-md-6">
+            <div class="card mb-4"> {# Standardized card #}
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-award me-2"></i> Quick Actions</h5>
+                    <div class="d-grid gap-2 mt-3">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#sharePurchaseModal">
+                            <i class="bi bi-plus me-2"></i>Buy More Shares
+                        </button>
+                        <button class="btn btn-outline-primary">
+                            <i class="bi bi-bar-chart me-2"></i>View Performance
+                        </button>
+                        <button class="btn btn-outline-secondary">
+                            <i class="bx bx-folder-down me-2"></i>Download Statement
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase History -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card mb-4"> {# Standardized card #}
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-calendar3 me-2"></i> Purchase History</h5>
+                    <div class="mt-3">
+                        {% for purchase in purchase_history %}
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-graph-up-arrow text-success fs-4 me-2"></i>
+                                <div>
+                                    <div class="fw-bold">Purchase <span class="badge bg-success-subtle text-success border rounded-5 border-success ms-2">Completed</span></div>
+                                    <small class="text-muted">{{ purchase.transaction_date|date:"m/d/Y" }} • ID: {{ purchase.reference_number }}</small>
+                                </div>
+                            </div>
+                            <div class="text-end text-success">
+                                <div class="fw-bold">+KES {{ purchase.total_amount|floatformat:2 }}</div>
+                                <small class="text-muted">{{ purchase.units }} units</small>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">No purchase history</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Purchase Modal -->
+<div class="modal fade" id="sharePurchaseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Purchase Shares</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Number of Units</label>
+                        {{ purchase_form.units }}
+                    </div>
+                    <div class="alert alert-info">
+                        <small>Current price: KES 100 per unit</small><br>
+                        <strong>Total: KES <span id="totalAmount">0</span></strong>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="purchase_submit" class="btn btn-primary">Purchase Shares</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Set Share Goal Modal -->
+<div class="modal fade" id="setShareGoalModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set Monthly Share Target</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="{{ share_goal_form.monthly_share_target.id_for_label }}" class="form-label">Monthly Target Amount (KES)</label>
+                        {{ share_goal_form.monthly_share_target }}
+                        {% if share_goal_form.monthly_share_target.errors %}
+                            <div class="invalid-feedback d-block">{{ share_goal_form.monthly_share_target.errors }}</div>
+                        {% endif %}
+                        <div class="form-text text-muted">{{ share_goal_form.monthly_share_target.help_text }}</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="set_goal_submit" class="btn btn-primary">Save Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fix for aria-hidden on modals when opened
+        var sharePurchaseModal = document.getElementById('sharePurchaseModal');
+        var setShareGoalModal = document.getElementById('setShareGoalModal');
+
+        if (sharePurchaseModal) {
+            sharePurchaseModal.addEventListener('shown.bs.modal', function () {
+                this.removeAttribute('aria-hidden');
+            });
+        }
+        if (setShareGoalModal) {
+            setShareGoalModal.addEventListener('shown.bs.modal', function () {
+                this.removeAttribute('aria-hidden');
+            });
+        }
+    });
+</script>
+{% endblock %}

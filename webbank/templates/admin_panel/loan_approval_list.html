@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <h3 class="fw-bold mb-4">Loans Pending {{ approval_stage_name }}</h3>
+
+    <div class="card p-4">
+        <form method="post" action="{% url 'admin_panel:loan_approval_list' %}">
+            {% csrf_token %}
+            <div class="d-flex justify-content-end mb-3">
+                <button type="submit" name="bulk_action" value="approved" class="btn btn-success me-2">Approve Selected</button>
+                <button type="submit" name="bulk_action" value="rejected" class="btn btn-danger">Reject Selected</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll"></th>
+                            <th>Loan ID</th>
+                            <th>Member</th>
+                            <th>Loan Type</th>
+                            <th>Amount Applied</th>
+                            <th>Application Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loan in loans %}
+                        <tr>
+                            <td><input type="checkbox" name="selected_loans" value="{{ loan.id }}"></td>
+                            <td>{{ loan.loan_id }}</td>
+                            <td>{{ loan.member.get_full_name }}</td>
+                            <td>{{ loan.loan_type.name }}</td>
+                            <td>Ksh {{ loan.amount_applied|floatformat:2 }}</td>
+                            <td>{{ loan.application_date|date:"Y-m-d" }}</td>
+                            <td><span class="badge bg-warning text-dark">{{ loan.get_approval_stage_display }}</span></td>
+                            <td>
+                                <a href="{% url 'admin_panel:loan_approval_detail' loan.id %}" class="btn btn-sm btn-primary">Review</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">No loans currently pending {{ approval_stage_name }}.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('selectAll').addEventListener('change', function(e) {
+        const checkboxes = document.querySelectorAll('input[name="selected_loans"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = e.target.checked;
+        });
+    });
+</script>
+{% endblock %}

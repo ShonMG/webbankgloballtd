@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="context d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4"> {# Matches members.html context div #}
+        <div class="shares-text"> {# Uses shares-text for consistent styling #}
+            <h2>Guarantor Dashboard</h2>
+            <p class="text-muted">Overview of your guarantees and pending requests.</p> {# Added descriptive text #}
+        </div>
+        <div class="shares-button mt-2 mt-sm-0"> {# Consistent button structure #}
+            <button class="btn btn-primary btn-sm">View All Guaranteed Loans</button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Guarantees</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ total_guarantees }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-secondary text-white rounded-circle shadow">
+                                <i class="fas fa-shield-halved"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Active Guarantees</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ active_guarantees }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-success text-white rounded-circle shadow">
+                                <i class='bxr bx-group'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Amount</h5>
+                            <span class="h2 font-weight-bold mb-0">Ksh {{ total_amount|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-primary text-white rounded-circle shadow">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">At Risk</h5>
+                            <span class="h2 font-weight-bold mb-0">{{ at_risk }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-danger text-white rounded-circle shadow">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guaranteed Loans Table -->
+    <div class="card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Guaranteed Loans</h5>
+            <input type="text" class="form-control form-control-sm w-auto" placeholder="Search loans...">
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Borrower</th>
+                        <th>Loan Type</th>
+                        <th>Loan Amount</th>
+                        <th>Guarantee Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for guarantee in guarantees %}
+                    <tr>
+                        <td>{{ guarantee.loan.member.get_full_name }}</td>
+                        <td>{{ guarantee.loan.loan_type.name }}</td>
+                        <td>Ksh {{ guarantee.loan.amount_approved|floatformat:2 }}</td>
+                        <td>Ksh {{ guarantee.amount_guaranteed|floatformat:2 }}</td>
+                        <td>
+                            <span class="status-pill 
+                                {% if guarantee.status == 'active' %}status-active
+                                {% elif guarantee.status == 'pending' %}status-pending
+                                {% else %}status-released{% endif %}">
+                                {{ guarantee.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ guarantee.guarantee_date|date:"Y-m-d" }}</td>
+                        <td><button class="btn btn-outline-secondary btn-sm">View Details</button></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class='bxr bx-info-shield' style="font-size: 3rem; color: #ccc;"></i>
+                            <h6 class="mt-2">No Guarantees</h6>
+                            <p class="text-muted mb-0">You haven't guaranteed any loans yet.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="card mb-4">
+        <h5 class="fw-bold mb-3">Recent Activity</h5>
+        
+        {% for guarantee in guarantees|slice:":2" %}
+        <div class="recent-activity-item d-flex justify-content-between align-items-start">
+            <div>
+                <p class="mb-1 fw-medium">Guarantee for {{ guarantee.loan.member.get_full_name }}</p>
+                <small class="text-muted">{{ guarantee.loan.loan_type.name }} - Ksh {{ guarantee.loan.amount_approved|floatformat:2 }}</small>
+            </div>
+            <div>
+                <span class="badge 
+                    {% if guarantee.status == 'active' %}bg-success
+                    {% elif guarantee.status == 'pending' %}bg-warning text-dark
+                    {% else %}bg-secondary{% endif %}">
+                    {{ guarantee.get_status_display }}
+                </span>
+            </div>
+        </div>
+        {% if not forloop.last %}
+        <hr>
+        {% endif %}
+        {% empty %}
+        <div class="text-center py-3">
+            <p class="text-muted mb-0">No recent guarantee activity</p>
+        </div>
+        {% endfor %}
+        
+        <!-- Pending Guarantee Requests -->
+    <div class="card mb-4 mt-4">
+        <h5 class="fw-bold mb-3">Pending Guarantee Requests</h5>
+        {% for guarantee in all_pending_guarantees %}
+        <div class="recent-activity-item d-flex justify-content-between align-items-start">
+            <div>
+                <p class="mb-1 fw-medium">
+                    {% if guarantee.guarantor == request.user %}
+                        Guarantee you offered for {{ guarantee.loan.member.get_full_name }}
+                    {% else %}
+                        Guarantee for your loan from {{ guarantee.guarantor.get_full_name }}
+                    {% endif %}
+                </p>
+                <small class="text-muted">{{ guarantee.loan.loan_type.name }} loan for Ksh {{ guarantee.amount_guaranteed|floatformat:2 }}</small>
+            </div>
+            <div>
+                {% if guarantee.loan.member == request.user %}
+                {# If the current user is the borrower, they might accept/reject the guarantee #}
+                <button class="btn btn-outline-secondary btn-sm me-2">Decline</button>
+                <button class="btn btn-dark btn-sm">Approve</button>
+                {% else %}
+                {# If the current user is the guarantor, they just see it's pending #}
+                <span class="badge bg-warning text-dark">Pending Your Approval</span>
+                {% endif %}
+            </div>
+        </div>
+        {% if not forloop.last %}
+        <hr>
+        {% endif %}
+        {% empty %}
+        <div class="text-center py-3">
+            <p class="text-muted mb-0">No pending guarantee requests.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

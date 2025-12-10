@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Loans{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>My Loans</h2>
+            <p class="text-muted">Overview of all your loan applications and their statuses.</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">All My Loans</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Loan ID</th>
+                                <th scope="col">Loan Type</th>
+                                <th scope="col">Applied Amount</th>
+                                <th scope="col">Approved Amount</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Application Date</th>
+                                <th scope="col">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in user_loans %}
+                            <tr>
+                                <td>{{ loan.loan_id }}</td>
+                                <td>{{ loan.loan_type.name }}</td>
+                                <td>KES {{ loan.amount_applied|floatformat:2 }}</td>
+                                <td>KES {{ loan.amount_approved|default:"N/A"|floatformat:2 }}</td>
+                                <td><span class="badge bg-{% if loan.status == 'approved' or loan.status == 'disbursed' or loan.status == 'active' %}success{% elif loan.status == 'rejected' or loan.status == 'defaulted' %}danger{% else %}info{% endif %}">{{ loan.get_status_display }}</span></td>
+                                <td>{{ loan.application_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <a href="{% url 'loans:loan_detail' pk=loan.pk %}" class="btn btn-sm btn-primary">View</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7">No loans found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a href="{% url 'loans:loans_dashboard' %}" class="btn btn-secondary">Back to Loan Application</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

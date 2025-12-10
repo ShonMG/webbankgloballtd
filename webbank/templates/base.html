@@ -1,0 +1,242 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebBank Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> {# Added Font Awesome for more icons #}
+  <link rel="stylesheet" href="{% static 'webbank/css/styles.css' %}">
+  <link href='https://cdn.boxicons.com/fonts/basic/boxicons.min.css' rel='stylesheet'>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top px-3">
+      <div class="d-flex align-items-center">
+          <!-- Menu icon - only visible on small screens -->
+          <button class="btn d-lg-none me-1" id="menu-toggle">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+              </svg>
+          </button>
+
+          <!-- WB Logo -->
+          <a class="navbar-brand d-flex align-items-center" href="{% url 'index' %}">
+              <svg width="32" height="32" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" class="me-2">
+                  <rect width="36" height="36" rx="8" fill="darkblue"/>
+                  <text x="50%" y="55%" text-anchor="middle" fill="white" font-size="18" font-family="Arial" font-weight="bold" dy=".1em">WB</text>
+              </svg>
+              <span class="fw-bold text-primary">WebBank</span>
+          </a>
+      </div>
+
+      <div class="ms-auto d-flex align-items-center">
+          <!-- Notification Icon -->
+          <li class="nav-item dropdown list-unstyled">
+              <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+                  <i class="bi bi-bell-fill"></i>
+                  <span class="badge bg-primary badge-number me-3">{{ unread_notifications_count|default:0 }}</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+                  <li class="dropdown-header">
+                      You have {{ unread_notifications_count|default:0 }} new notifications
+                      <a href="#" data-bs-toggle="modal" data-bs-target="#notificationsModal"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li class="text-center p-2">
+                      <p>Click "View all" to see your notifications.</p>
+                      <a href="#" data-bs-toggle="modal" data-bs-target="#notificationsModal" class="btn btn-sm btn-outline-primary">Show all notifications</a>
+                  </li>
+              </ul>
+          </li>
+
+          <!-- Profile Dropdown -->
+          <li class="nav-item dropdown ps-3 list-unstyled">
+              <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+                  {% if user.profile_picture %}
+                  <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle" width="32" height="32">
+                  {% else %}
+                  <i class="bi bi-person-circle fs-3 text-secondary"></i>
+                  {% endif %}
+                  <span class="d-none d-md-block dropdown-toggle ps-2">{{ user.get_full_name|default:user.username }}</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                  <li class="dropdown-header">
+                      <h6>{{ user.get_full_name|default:user.username }}</h6>
+                      <span>{{ user.get_user_type_display }}</span>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                      <a class="dropdown-item d-flex align-items-center" href="{% url 'accounts:profile' %}">
+                          <i class="bi bi-person"></i>
+                          <span class="ms-2">My Profile</span>
+                      </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                      <a class="dropdown-item d-flex align-items-center" href="{% url 'accounts:settings' %}>
+                          <i class="bi bi-gear"></i>
+                          <span class="ms-2">Account Settings</span>
+                      </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                      <a class="dropdown-item d-flex align-items-center" href="{% url 'support:support_dashboard' %}">
+                          <i class="bi bi-question-circle"></i>
+                          <span class="ms-2">Need Help?</span>
+                      </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                      <a class="dropdown-item d-flex align-items-center" href="{% url 'accounts:logout' %}">
+                          <i class="bi bi-box-arrow-right"></i>
+                          <span class="ms-2">Sign Out</span>
+                      </a>
+                  </li>
+              </ul>
+          </li>
+      </div>
+  </nav>
+
+  <div class="sidebar-overlay d-lg-none"></div> {# Overlay for mobile sidebar #}
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar"> {# Removed d-none d-lg-block to be controlled by JS #}
+      {% if user.is_authenticated %}
+    {% if user.user_type == 'founder' %}
+        <a href="{% url 'admin_panel:founder_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'founder_dashboard' %}active{% endif %}">
+            <i class='bx bxs-dashboard'></i> Dashboard
+        </a>
+    {% elif user.user_type == 'admin' %}
+        <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+            <i class='bx bxs-dashboard'></i> Dashboard
+        </a>
+    {% else %}
+        <a href="{% url 'dashboard:main_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'main_dashboard' %}active{% endif %}">
+            <i class='bx bxs-dashboard'></i> Dashboard
+        </a>
+    {% endif %}
+
+      {# Admin/Founder specific links #}
+      {% if user.user_type == 'founder' or user.user_type == 'admin' %}
+      <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+          <span>Administration</span>
+      </h6>
+      {% if user.user_type == 'founder' %}
+      <a href="{% url 'admin_panel:founder_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'founder_dashboard' %}active{% endif %}">
+          <i class='fas fa-crown'></i> Founder Panel
+      </a>
+      {% endif %}
+      <a href="{% url 'admin_panel:user_list' %}" class="nav-link {% if 'user_' in request.resolver_match.view_name %}active{% endif %}">
+          <i class='fas fa-users-cog'></i> User Management
+      </a>
+      <a href="{% url 'admin_panel:pending_members' %}" class="nav-link {% if 'pending_members' in request.resolver_match.view_name %}active{% endif %}">
+          <i class='fas fa-user-check'></i> Member Approvals
+      </a>
+      <a href="{% url 'admin_panel:loan_config_panel' %}" class="nav-link {% if 'loan_config' in request.resolver_match.view_name or 'loan_type' in request.resolver_match.view_name %}active{% endif %}">
+          <i class='fas fa-file-invoice-dollar'></i> Loan Configuration
+      </a>
+      <a href="{% url 'admin_panel:share_config_panel' %}" class="nav-link {% if 'share_config' in request.resolver_match.view_name %}active{% endif %}">
+          <i class='fas fa-chart-pie'></i> Share Configuration
+      </a>
+      <a href="{% url 'admin_panel:system_config_panel' %}" class="nav-link {% if 'system_config' in request.resolver_match.view_name %}active{% endif %}">
+          <i class='fas fa-cogs'></i> System Settings
+      </a>
+      <a href="{% url 'admin_panel:notification_settings_panel' %}" class="nav-link {% if 'notification_' in request.resolver_match.view_name %}active{% endif %}">
+          <i class='fas fa-bell'></i> Notification Management
+      </a>
+      <a href="{% url 'admin_panel:reporting_dashboard' %}" class="nav-link {% if 'report' in request.resolver_match.view_name %}active{% endif %}">
+          <i class='fas fa-chart-line'></i> Reporting
+      </a>
+      <a href="{% url 'admin_panel:audit_log_list' %}" class="nav-link {% if 'audit_log' in request.resolver_match.view_name %}active{% endif %}">
+          <i class='fas fa-clipboard-list'></i> Audit Log
+      </a>
+      {% endif %}
+
+      {# General Links (Members, Shares, Loans, etc.) #}
+      {% if user.user_type == 'admin' %} {# Only if admin, otherwise hide general members dashboard #}
+      <a href="{% url 'members:members_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'members_dashboard' %}active{% endif %}">
+          <i class='bx bxs-group'></i> Members
+      </a>
+      {% endif %}
+      <a href="{% url 'shares:shares_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'shares_dashboard' %}active{% endif %}">
+          <i class='bx bxs-pie-chart'></i> Shares
+      </a>
+      <a href="{% url 'loans:loans_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'loans_dashboard' %}active{% endif %}">
+          <i class='bx bxs-wallet'></i> Loans
+      </a>
+      {% if user.user_type == 'guarantor' or user.user_type == 'admin' or user.user_type == 'founder' %}
+      <a href="{% url 'guarantees:guarantees_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'guarantees_dashboard' %}active{% endif %}">
+          <i class='bx bxs-shield-alt-2'></i> Guarantors
+      </a>
+      {% endif %}
+      {% if user.user_type == 'director' or user.user_type == 'admin' or user.user_type == 'founder' %}
+      <a href="{% url 'directors:directors_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'directors_dashboard' %}active{% endif %}">
+          <i class='bx bxs-crown'></i> Directors
+      </a>
+      {% endif %}
+      {% endif %} {# End of if user.is_authenticated #}
+  </div>
+
+  <!-- Main Content -->
+  <div class="content main-content animate__animated animate__fadeInUp">
+      {% if messages %}
+      <div class="container mt-3">
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+      </div>
+      {% endif %}
+      
+      {% block content %}
+      {% endblock %}
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'webbank/js/scripts.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+
+  <!-- Notifications Modal -->
+  <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="notificationsModalLabel">Your Notifications</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="list-group">
+            {% for notification in all_notifications %} {# Assuming 'all_notifications' will be available, or recent for now #}
+            <a href="#" class="list-group-item list-group-item-action {% if not notification.is_read %}fw-bold{% endif %}" data-notification-id="{{ notification.id }}">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ notification.title }}</h5>
+                <small>{{ notification.created_at|timesince }} ago</small>
+              </div>
+              <p class="mb-1">{{ notification.message }}</p>
+              <small class="text-muted">Type: {{ notification.get_notification_type_display }}</small>
+            </a>
+            {% empty %}
+            <div class="alert alert-info text-center" role="alert">
+              No new notifications.
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <a href="{% url 'notifications:mark_all_read' %}" class="btn btn-primary">Mark All As Read</a> {# Corrected URL #}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>{{ title }}</h3>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Report Period</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <label for="id_start_date" class="form-label">Start Date:</label>
+                    <input type="date" class="form-control" id="id_start_date" name="start_date" value="{{ start_date }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="id_end_date" class="form-label">End Date:</label>
+                    <input type="date" class="form-control" id="id_end_date" name="end_date" value="{{ end_date }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary mt-4">Apply Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Balance Sheet (As of {{ end_date }})</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary">Assets</h6>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Cash Balance
+                            <span>KES {{ cash_balance|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Loans Receivable
+                            <span>KES {{ loans_receivable|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Investments (Shares)
+                            <span>KES {{ investments_shares|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                            Total Assets
+                            <span>KES {{ total_assets|floatformat:2 }}</span>
+                        </li>
+                    </ul>
+
+                    <h6 class="text-primary">Liabilities</h6>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Member Deposits (Simulated)
+                            <span>KES {{ member_deposits|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Loans Payable (Simulated)
+                            <span>KES {{ loans_payable|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                            Total Liabilities
+                            <span>KES {{ total_liabilities|floatformat:2 }}</span>
+                        </li>
+                    </ul>
+
+                    <h6 class="text-primary">Equity</h6>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Share Capital
+                            <span>KES {{ share_capital|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Retained Earnings (Derived)
+                            <span>KES {{ retained_earnings|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                            Total Equity
+                            <span>KES {{ total_equity|floatformat:2 }}</span>
+                        </li>
+                    </ul>
+                    <div class="alert alert-info text-center fw-bold">
+                        Total Liabilities & Equity: KES {{ (total_liabilities + total_equity)|floatformat:2 }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Income Statement ({{ start_date }} to {{ end_date }})</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-success">Revenue</h6>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Interest Income from Loans (Simplified)
+                            <span>KES {{ interest_income_loans|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Other Income (Simulated)
+                            <span>KES {{ other_income|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                            Total Revenue
+                            <span>KES {{ total_revenue|floatformat:2 }}</span>
+                        </li>
+                    </ul>
+
+                    <h6 class="text-danger">Expenses</h6>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Operating Expenses (Simulated)
+                            <span>KES {{ operating_expenses|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Interest Expense (Simulated)
+                            <span>KES {{ interest_expense|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                            Total Expenses
+                            <span>KES {{ total_expenses|floatformat:2 }}</span>
+                        </li>
+                    </ul>
+
+                    <div class="alert {% if net_income >= 0 %}alert-success{% else %}alert-danger{% endif %} text-center fw-bold">
+                        Net Income: KES {{ net_income|floatformat:2 }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-warning">
+        <strong>Note:</strong> This financial report is based on simulated and simplified data. For real-world financial reporting, a more robust accounting system would be required.
+    </div>
+</div>
+{% endblock %}

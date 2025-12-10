@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Transaction History{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Share Transaction History</h2>
+            <p class="text-muted">A comprehensive list of all your share transactions.</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">All Transactions</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Units</th>
+                                <th scope="col">Unit Price</th>
+                                <th scope="col">Total Amount</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in all_transactions %}
+                            <tr>
+                                <td>{{ transaction.transaction_date|date:"M d, Y H:i" }}</td>
+                                <td>{{ transaction.get_transaction_type_display }}</td>
+                                <td>{{ transaction.units|floatformat:2 }}</td>
+                                <td>KES {{ transaction.unit_price|floatformat:2 }}</td>
+                                <td>KES {{ transaction.total_amount|floatformat:2 }}</td>
+                                <td>{{ transaction.description }}</td>
+                                <td>{{ transaction.reference_number }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7">No transactions found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a href="{% url 'shares:shares_dashboard' %}" class="btn btn-secondary">Back to Shares Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

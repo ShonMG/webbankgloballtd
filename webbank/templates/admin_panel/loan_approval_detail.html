@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container-fluid">
+    <h3 class="fw-bold mb-4">Review Loan Application: {{ loan.loan_id }}</h3>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-3">Loan Details</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-2"><strong>Member:</strong> {{ loan.member.get_full_name }} ({{ loan.member.member_id }})</div>
+                    <div class="col-md-6 mb-2"><strong>Email:</strong> {{ loan.member.email }}</div>
+                    <div class="col-md-6 mb-2"><strong>Loan Type:</strong> {{ loan.loan_type.name }}</div>
+                    <div class="col-md-6 mb-2"><strong>Amount Applied:</strong> Ksh {{ loan.amount_applied|floatformat:2 }}</div>
+                    <div class="col-md-6 mb-2"><strong>Interest Rate:</strong> {{ loan.interest_rate }}%</div>
+                    <div class="col-md-6 mb-2"><strong>Term:</strong> {{ loan.term_months }} months</div>
+                    <div class="col-12 mb-2"><strong>Purpose:</strong> {{ loan.purpose }}</div>
+                    <div class="col-md-6 mb-2"><strong>Application Date:</strong> {{ loan.application_date|date:"Y-m-d H:i" }}</div>
+                    <div class="col-md-6 mb-2"><strong>Current Status:</strong> <span class="badge bg-warning text-dark">{{ loan.get_approval_stage_display }}</span></div>
+                </div>
+            </div>
+
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-3">Member Details</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-2"><strong>Phone:</strong> {{ loan.member.phone_number|default:"N/A" }}</div>
+                    <div class="col-md-6 mb-2"><strong>ID Number:</strong> {{ loan.member.id_number|default:"N/A" }}</div>
+                    <div class="col-12 mb-2"><strong>Address:</strong> {{ loan.member.address|default:"N/A" }}</div>
+                    <div class="col-md-6 mb-2"><strong>Credit Score:</strong> {{ loan.member.credit_score }}</div>
+                    <div class="col-md-6 mb-2"><strong>Total Shares:</strong> Ksh {{ loan.member.share.total_value|floatformat:2|default:"0.00" }}</div>
+                </div>
+            </div>
+
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-3">Approval History</h5>
+                {% if approval_logs %}
+                <ul class="list-group list-group-flush">
+                    {% for log in approval_logs %}
+                    <li class="list-group-item">
+                        <strong>{{ log.get_action_display }}</strong> by {{ log.approver.get_full_name|default:log.approver.username }} on {{ log.timestamp|date:"Y-m-d H:i" }}
+                        {% if log.comments %}<p class="text-muted mb-0 ps-3">"{{ log.comments }}"</p>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No approval history yet for this loan.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card p-4 mb-4">
+                <h5 class="fw-bold mb-3">Take Action</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="comments" class="form-label">Comments (Optional):</label>
+                        <textarea class="form-control" id="comments" name="comments" rows="3"></textarea>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="action" value="approved" class="btn btn-success">Approve & Forward to Director</button>
+                        <button type="submit" name="action" value="rejected" class="btn btn-danger">Reject Loan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

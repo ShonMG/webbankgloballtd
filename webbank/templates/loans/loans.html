@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="context d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4"> {# Matches members.html context div #}
+        <div class="shares-text"> {# Uses shares-text for consistent styling #}
+            <h2>Loans</h2>
+            <p class="text-muted">Manage your loan applications and repayments</p>
+        </div>
+        <div class="shares-button mt-2 mt-sm-0"> {# Consistent button structure #}
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loanApplicationModal">
+                <i class='bxr bx-plus'></i> Apply for Loan
+            </button>
+        </div>
+    </div>
+    <!-- Top Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Total Borrowed</h5>
+                            <span class="h2 font-weight-bold mb-0">
+                                {% with last_approved_loan=user.loans.all|dictsort:"amount_approved"|last %}
+                                    KES {{ last_approved_loan.amount_approved|default:0|floatformat:2 }}
+                                {% endwith %}
+                            </span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                                <i class='bxr bx-dollar'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Outstanding</h5>
+                            <span class="h2 font-weight-bold mb-0">KES {{ outstanding_balance|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                                <i class='bxr bx-trending-up'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Available Limit</h5>
+                            <span class="h2 font-weight-bold mb-0">KES {{ available_credit|floatformat:2 }}</span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                                <i class='bxr bx-wallet-note'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-stats">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 class="card-title text-uppercase text-muted mb-0">Next Payment</h5>
+                            <span class="h2 font-weight-bold mb-0">
+                                {% with next_payment=user.loans.all|first %}
+                                    {{ next_payment.next_payment_date|date:"M j"|default:"N/A" }}
+                                {% endwith %}
+                            </span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                                <i class='bxr bx-calendar'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3"> {# Add a row for consistent spacing if needed, or loop directly #}
+        {% for loan in loans %}
+        <div class="col-md-12 mb-4"> {# Each loan card gets its own column #}
+            <div class="card"> {# Standardized card #}
+                <div class="card-body"> {# Wrap content in card-body #}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="loan-icon"><i class='bxr bx-briefcase-alt-2'></i> </div>
+                            <div>
+                                <h5 class="mb-0 fw-bold">{{ loan.loan_type.name }}</h5>
+                                <small class="text-muted">{{ loan.loan_id }}</small>
+                            </div>
+                        </div>
+                        <span class="badge 
+                            {% if loan.approval_stage == 'pending_manager' %}bg-warning text-dark
+                            {% elif loan.approval_stage == 'pending_director' %}bg-info text-white
+                            {% elif loan.approval_stage == 'approved' %}bg-success
+                            {% elif loan.approval_stage == 'rejected' %}bg-danger
+                            {% else %}bg-secondary{% endif %}">
+                            {{ loan.get_approval_stage_display }}
+                        </span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p class="mb-1"><strong>Loan Details</strong></p>
+                            <p class="mb-0">Applied: <span class="float-end">KES {{ loan.amount_applied|floatformat:2 }}</span></p>
+                            <p class="mb-0">Approved: <span class="float-end">KES {{ loan.amount_approved|floatformat:2|default:"Pending" }}</span></p>
+                            <p class="mb-0">Interest Rate: <span class="float-end">{{ loan.interest_rate }}% p.a.</span></p>
+                            <p class="mb-3">Tenure: <span class="float-end">{{ loan.term_months }} months</span></p>
+                            <p class="mb-0"><strong>Current Approval Stage:</strong> <span class="badge 
+                                {% if loan.approval_stage == 'pending_manager' %}bg-warning text-dark
+                                {% elif loan.approval_stage == 'pending_director' %}bg-info text-white
+                                {% elif loan.approval_stage == 'approved' %}bg-success
+                                {% elif loan.approval_stage == 'rejected' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">{{ loan.get_approval_stage_display }}</span></p>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="mb-1"><strong>Repayment Progress</strong></p>
+                            <div class="repayment-bar mb-1">
+                                <div class="repayment-progress" style="width: {% widthratio loan.total_paid loan.amount_approved 100 %}%;"></div>
+                            </div>
+                            <small>KES {{ loan.total_paid|floatformat:2 }} paid <span class="float-end">{% widthratio loan.total_paid loan.amount_approved 100 %}%</span></small>
+                            <p class="mb-0 mt-2">Monthly Payment: <strong>KES {{ loan.monthly_payment|floatformat:2|default:"N/A" }}</strong></p>
+                            <p class="mb-0">Next Payment: <span class="text-warning">{{ loan.next_payment_date|date:"Y-m-d"|default:"N/A" }}</span></p>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="mb-1"><strong>Application Info</strong></p>
+                            <p class="mb-0"><i class='bxr bx-calendar'></i> Applied: {{ loan.application_date|date:"m/d/Y" }}</p>
+                            {% if loan.approval_date %}
+                            <p class="mb-0"><i class='bxr bx-check-circle'></i> Approved: {{ loan.approval_date|date:"m/d/Y" }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">Applied: {{ loan.application_date|date:"n/j/Y" }}</small>
+                        <div>
+                            <button class="btn btn-outline-secondary btn-sm me-2">View Details</button>
+                            {% if loan.status == 'active' %}
+                            <button class="btn btn-success btn-sm">Make Payment</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-md-12 mb-4"> {# Empty state also wrapped in a card #}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class='bxr bx-wallet-note' style="font-size: 3rem; color: #ccc;"></i>
+                    <h5 class="mt-3">No Loan Applications</h5>
+                    <p class="text-muted">You haven't applied for any loans yet.</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loanApplicationModal">
+                        Apply for Your First Loan
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    </div>
+</div>
+
+<!-- Loan Application Modal -->
+<div class="modal fade" id="loanApplicationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Apply for Loan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Loan Type</label>
+                            {{ form.loan_type }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Amount Applied (KES)</label>
+                            {{ form.amount_applied }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Term (Months)</label>
+                            {{ form.term_months }}
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Purpose</label>
+                            {{ form.purpose }}
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Guarantors</label>
+                            {{ form.guarantors }}
+                            <small class="form-text text-muted">Select members who will guarantee this loan.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

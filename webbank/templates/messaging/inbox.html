@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3 class="mb-4">Your Inbox</h3>
+
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{% url 'messaging:new_conversation' %}" class="btn btn-primary">Start New Conversation</a>
+    </div>
+
+    {% if conversations %}
+    <div class="list-group">
+        {% for conversation in conversations %}
+        <a href="{% url 'messaging:conversation_detail' conversation.id %}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">
+                    {% for participant in conversation.participants.all %}
+                        {% if participant != request.user %}
+                            {{ participant.get_full_name|default:participant.username }}
+                            {% if not forloop.last %}, {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </h5>
+                <small>{{ conversation.updated_at|timesince }} ago</small>
+            </div>
+            {% with last_message=conversation.messages.last %}
+            {% if last_message %}
+            <p class="mb-1 text-truncate">{{ last_message.body }}</p>
+            <small>Last message from {{ last_message.sender.username }}</small>
+            {% else %}
+            <p class="mb-1 text-muted">No messages yet.</p>
+            {% endif %}
+            {% endwith %}
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="alert alert-info">You have no conversations yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

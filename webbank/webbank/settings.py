@@ -34,6 +34,7 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 if DEBUG:
     ALLOWED_HOSTS.append('webbankglobal.onrender.com')
+    ALLOWED_HOSTS.append('0.0.0.0')
 
 
 # Application definition
@@ -160,3 +161,6 @@ LOGOUT_REDIRECT_URL = '/'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 BASE_URL = os.environ.get('BASE_URL', 'http://127.0.0.1:8000')
+
+CSRF_TRUSTED_ORIGINS = ['https://webbankglobal.onrender.com']
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

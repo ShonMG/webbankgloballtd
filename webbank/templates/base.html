@@ -121,7 +121,7 @@
             <i class='bx bxs-dashboard'></i> Dashboard
         </a>
     {% endif %}
-
+      {% if not is_amor108_dashboard %}
       {# Admin/Founder specific links #}
       {% if user.user_type == 'founder' or user.user_type == 'admin' %}
       <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
@@ -137,6 +137,9 @@
       </a>
       <a href="{% url 'admin_panel:pending_members' %}" class="nav-link {% if 'pending_members' in request.resolver_match.view_name %}active{% endif %}">
           <i class='fas fa-user-check'></i> Member Approvals
+      </a>
+      <a href="{% url 'admin_panel:pending_amor108_members' %}" class="nav-link {% if 'pending_amor108_members' in request.resolver_match.view_name %}active{% endif %}">
+          <i class='fas fa-user-check'></i> Amor108 Approvals
       </a>
       <a href="{% url 'admin_panel:loan_config_panel' %}" class="nav-link {% if 'loan_config' in request.resolver_match.view_name or 'loan_type' in request.resolver_match.view_name %}active{% endif %}">
           <i class='fas fa-file-invoice-dollar'></i> Loan Configuration
@@ -169,6 +172,48 @@
       </a>
       <a href="{% url 'loans:loans_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'loans_dashboard' %}active{% endif %}">
           <i class='bx bxs-wallet'></i> Loans
+      </a>
+      <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+          <span>AMOR 108 Dashboard</span>
+      </h6>
+      <a href="{% url 'amor108:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.app_name == 'amor108' %}active{% endif %}">
+          <i class='bx bxs-dashboard'></i> Dashboard Overview
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#contributions" class="nav-link">
+          <i class='fas fa-hand-holding-usd'></i> Contributions & Savings
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#shares" class="nav-link">
+          <i class='fas fa-chart-pie'></i> Shares & Growth
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#loans" class="nav-link">
+          <i class='fas fa-money-check-alt'></i> Loans
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#profits" class="nav-link">
+          <i class='fas fa-funnel-dollar'></i> Profits & Interest
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#investments" class="nav-link">
+          <i class='fas fa-lightbulb'></i> Investments & Pool
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#voting" class="nav-link">
+          <i class='fas fa-vote-yea'></i> Voting & Governance
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#notifications" class="nav-link">
+          <i class='fas fa-bell'></i> Notifications
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#documents" class="nav-link">
+          <i class='fas fa-file-alt'></i> Documents & Reports
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#exit" class="nav-link">
+          <i class='fas fa-sign-out-alt'></i> Exit & Withdrawal
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#support" class="nav-link">
+          <i class='fas fa-headset'></i> Support & Comm.
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#security" class="nav-link">
+          <i class='fas fa-shield-alt'></i> Security & Settings
+      </a>
+      <a href="{% url 'amor108:dashboard' %}#transparency" class="nav-link">
+          <i class='fas fa-eye'></i> Transparency
       </a>
       {% if user.user_type == 'guarantor' or user.user_type == 'admin' or user.user_type == 'founder' %}
       <a href="{% url 'guarantees:guarantees_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'guarantees_dashboard' %}active{% endif %}">

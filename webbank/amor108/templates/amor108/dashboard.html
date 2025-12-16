@@ -1,0 +1,461 @@
+{% extends 'base.html' %}
+
+{% block title %}Amor108 - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Amor108 Member Dashboard</h1>
+
+    <!-- Dashboard Overview (Summary Cards) -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Contributions</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Ksh {{ total_contributions }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Current Share Value</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Ksh {{ current_share_value }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Accrued Interest / Profit</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Ksh {{ accrued_interest }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-piggy-bank fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Active Loans Balance</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Ksh {{ active_loans_balance }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-credit-card fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Profile Section -->
+    <div class="card shadow mb-4" id="profile">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Member Profile</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Full Name:</strong> {{ member.user.get_full_name }}</p>
+                    <p><strong>Membership ID:</strong> {{ member.user.username }}</p>
+                    <p><strong>Phone Number:</strong> {{ member.user.mobile_no }}</p>
+                    <p><strong>Email Address:</strong> {{ member.user.email }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Date Joined:</strong> {{ member.user.date_joined|date:"M d, Y" }}</p>
+                    <p><strong>Pool Assigned:</strong> {{ member.pool.name }}</p>
+                    <p><strong>Contribution Schedule:</strong> {{ member.pool.get_contribution_frequency_display }}</p>
+                    <p><strong>Contribution Amount:</strong> Ksh {{ member.pool.contribution_amount }}</p>
+                    <p><strong>Member Status:</strong> {{ member.get_status_display }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contributions & Savings -->
+    <div class="card shadow mb-4" id="contributions">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Contributions & Savings</h6>
+        </div>
+        <div class="card-body">
+            <h5>Contribution Summary</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Expected Contribution:</strong> Ksh {{ expected_contribution_amount }} {{ expected_contribution_frequency }}</p>
+                    <p><strong>Total Contributions to Date:</strong> Ksh {{ total_contributions_to_date }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Contribution Consistency:</strong> {{ contribution_consistency }}</p>
+                    <p><strong>Missed / Late Contributions:</strong> {{ missed_late_contributions_count }}</p>
+                </div>
+            </div>
+
+            <h5 class="mt-4">Contribution History</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contribution in all_contributions %}
+                        <tr>
+                            <td>{{ contribution.date|date:"M d, Y" }}</td>
+                            <td>Ksh {{ contribution.amount }}</td>
+                            <td>Paid</td> {# Placeholder for status #}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">No contributions made yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-3">
+                <a href="#" class="btn btn-sm btn-outline-primary">View Statement</a>
+                <a href="#" class="btn btn-sm btn-outline-primary">Download Report (PDF/Excel)</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shares & Growth Tracker -->
+    <div class="card shadow mb-4" id="shares">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Shares & Growth Tracker</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Total Shares Owned:</strong> {{ total_shares_owned }}</p>
+                    <p><strong>Reinvested Interest Amount:</strong> Ksh {{ reinvested_interest_amount }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Share Value per Unit:</strong> Ksh {{ share_value_per_unit }}</p>
+                    <p><strong>Total Share Value:</strong> Ksh {{ total_share_value_tracker }}</p>
+                </div>
+            </div>
+            <h5 class="mt-4">Share Growth Over Time (Chart)</h5>
+            <div class="chart-area">
+                {# Placeholder for a chart #}
+                <canvas id="shareGrowthChart"></canvas>
+            </div>
+            <p class="text-muted small mt-3">How shares increase from: Contributions, Reinvested profits</p>
+        </div>
+    </div>
+
+    <!-- Loans Section -->
+    <div class="card shadow mb-4" id="loans">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Loans Section</h6>
+        </div>
+        <div class="card-body">
+            <h5>Active Loans</h5>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Loan Type</th>
+                            <th>Principal Amount</th>
+                            <th>Interest Rate</th>
+                            <th>Outstanding Balance</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loan in active_loans %}
+                        <tr>
+                            <td>{{ loan.get_loan_type_display }}</td>
+                            <td>Ksh {{ loan.amount }}</td>
+                            <td>{{ loan.interest_rate }}%</td>
+                            <td>Ksh {{ loan.amount }}</td> {# Placeholder for outstanding balance #}
+                            <td>{{ loan.get_status_display }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No active loans.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <h5>Loan History</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Loan Type</th>
+                            <th>Principal Amount</th>
+                            <th>Interest Rate</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loan in loan_history %}
+                        <tr>
+                            <td>{{ loan.get_loan_type_display }}</td>
+                            <td>Ksh {{ loan.amount }}</td>
+                            <td>{{ loan.interest_rate }}%</td>
+                            <td>{{ loan.get_status_display }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">No loan history available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3">
+                <a href="{% url 'amor108:loan_request' %}" class="btn btn-sm btn-primary">Apply for Loan</a>
+                <a href="{% url 'amor108:loan_request' %}" class="btn btn-sm btn-success">Request Emergency Loan</a> {# Assuming same form for now #}
+                <a href="#" class="btn btn-sm btn-info">View Repayment Schedule</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profit & Interest Distribution -->
+    <div class="card shadow mb-4" id="profits">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Profit & Interest Distribution</h6>
+        </div>
+        <div class="card-body">
+            <h5>Earnings Overview</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Total Interest Earned:</strong> Ksh {{ total_interest_earned }}</p>
+                    <p><strong>Current Year Profit:</strong> Ksh {{ current_year_profit }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Last Distribution Amount:</strong> Ksh {{ last_distribution_amount }}</p>
+                    <p><strong>Next Distribution Date:</strong> {{ next_distribution_date }}</p>
+                </div>
+            </div>
+
+            <h5 class="mt-4">Profit Options</h5>
+            <div class="mb-3">
+                <a href="#" class="btn btn-sm btn-primary">Withdraw Profits</a>
+                <a href="#" class="btn btn-sm btn-success">Reinvest Profits (Increase Shares)</a>
+            </div>
+
+            <h5>Profit History</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Interest Earned</th>
+                            <th>Distribution Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Jan - Dec 2024</td>
+                            <td>Ksh 10,000</td>
+                            <td>Reinvested</td>
+                        </tr>
+                        <tr>
+                            <td>Jan - Dec 2023</td>
+                            <td>Ksh 8,000</td>
+                            <td>Withdrawn</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investments & Pool Performance -->
+    <div class="card shadow mb-4" id="investments">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Investments & Pool Performance</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Pool Total Fund Value:</strong> Ksh {{ pool_total_fund_value }}</p>
+                    <p><strong>Active Investments:</strong> {{ active_investments }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Pool Returns Generated:</strong> Ksh {{ pool_returns_generated }}</p>
+                    <p><strong>Member’s Share of Pool Returns:</strong> Ksh {{ members_share_of_pool_returns }}</p>
+                </div>
+            </div>
+            <p class="text-muted small mt-3">(Read-only for members)</p>
+        </div>
+    </div>
+
+    <!-- Voting & Governance -->
+    <div class="card shadow mb-4" id="voting">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Voting & Governance</h6>
+        </div>
+        <div class="card-body">
+            <h5>Active Proposals</h5>
+            <ul class="list-group mb-3">
+                {% for proposal in active_proposals %}
+                    <li class="list-group-item">{{ proposal.title }} - {{ proposal.details }}</li>
+                {% empty %}
+                    <li class="list-group-item text-center">No active proposals.</li>
+                {% endfor %}
+            </ul>
+
+            <p><strong>Voting Power:</strong> {{ voting_power }}</p>
+
+            <h5 class="mt-4">Voting History</h5>
+            <ul class="list-group mb-3">
+                {% for vote in voting_history %}
+                    <li class="list-group-item">{{ vote.proposal }} - {{ vote.decision }} ({{ vote.date }})</li>
+                {% empty %}
+                    <li class="list-group-item text-center">No voting history.</li>
+                {% endfor %}
+            </ul>
+            <div class="mt-3">
+                <a href="#" class="btn btn-sm btn-primary">Submit Vote</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications & Alerts -->
+    <div class="card shadow mb-4" id="notifications">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Notifications & Alerts</h6>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for notification in notifications %}
+                    <li class="list-group-item list-group-item-action {{ notification.type }}">
+                        {{ notification.message }}
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-center">No new notifications.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Documents & Reports -->
+    <div class="card shadow mb-4" id="documents">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Documents & Reports</h6>
+        </div>
+        <div class="card-body">
+            <div class="list-group">
+                {% for doc in documents_reports %}
+                <a href="{{ doc.url }}" class="list-group-item list-group-item-action">
+                    {{ doc.name }} <span class="badge bg-secondary">{{ doc.format }}</span>
+                </a>
+                {% empty %}
+                <p class="text-center">No documents or reports available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Exit & Withdrawal Section -->
+    <div class="card shadow mb-4" id="exit">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Exit & Withdrawal Section</h6>
+        </div>
+        <div class="card-body">
+            <p><strong>Exit Notice Date:</strong> {{ exit_notice_date }}</p>
+            <p><strong>30-Day Countdown Timer:</strong> {{ countdown_timer }}</p>
+            <p><strong>Estimated Withdrawal Amount:</strong> Ksh {{ estimated_withdrawal_amount }}</p>
+            <p><strong>Outstanding Obligations Summary:</strong> {{ outstanding_obligations_summary }}</p>
+            <div class="mt-3">
+                <a href="#" class="btn btn-danger">Exit Request Button</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support & Communication -->
+    <div class="card shadow mb-4" id="support">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Support & Communication</h6>
+        </div>
+        <div class="card-body">
+            <div class="list-group">
+                <a href="{{ message_pool_manager_link }}" class="list-group-item list-group-item-action">Message Pool Manager</a>
+                <a href="{{ contact_admin_link }}" class="list-group-item list-group-item-action">Contact Admin (WEBBANK GLOBAL LTD)</a>
+                <a href="{{ faqs_link }}" class="list-group-item list-group-item-action">FAQs</a>
+                <a href="{{ help_tickets_link }}" class="list-group-item list-group-item-action">Help Tickets</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security & Settings -->
+    <div class="card shadow mb-4" id="security">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Security & Settings</h6>
+        </div>
+        <div class="card-body">
+            <div class="list-group">
+                <a href="{{ change_password_link }}" class="list-group-item list-group-item-action">Change Password</a>
+                <span class="list-group-item">Two-Factor Authentication: <strong>{{ two_factor_auth_status }}</strong></span>
+                <a href="{{ device_login_history_link }}" class="list-group-item list-group-item-action">Device Login History</a>
+                <a href="{{ notification_preferences_link }}" class="list-group-item list-group-item-action">Notification Preferences</a>
+                <a href="{{ logout_link }}" class="list-group-item list-group-item-action text-danger">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transparency & Trust Indicators -->
+    <div class="card shadow mb-4" id="transparency">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Transparency & Trust Indicators</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Last Audit Date:</strong> {{ last_audit_date }}</p>
+                    <p><strong>Last Financial Update:</strong> {{ last_financial_update }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>System Health Status:</strong> {{ system_health_status }}</p>
+                    <p><strong>Verified Payment Status:</strong> {{ verified_payment_status }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="mb-4 d-flex justify-content-around flex-wrap">
+        <a href="{% url 'amor108:make_contribution' %}" class="btn btn-primary m-2">Make Contribution</a>
+        <a href="{% url 'amor108:loan_request' %}" class="btn btn-success m-2">Apply for Loan</a>
+        <a href="#" class="btn btn-info m-2">Reinvest Profits</a>
+        <a href="#" class="btn btn-secondary m-2">Download Statement</a>
+        <a href="#" class="btn btn-warning m-2">Message Manager</a>
+    </div>
+
+</div>
+{% endblock %}

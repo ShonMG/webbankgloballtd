@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Amor108 Member Approvals{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Pending Amor108 Member Approvals</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Amor108 Members Awaiting Approval</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Pool</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr>
+                            <td>{{ member.user.first_name }}</td>
+                            <td>{{ member.user.last_name }}</td>
+                            <td>{{ member.user.email }}</td>
+                            <td>{{ member.pool.name }}</td>
+                            <td>
+                                <a href="{% url 'admin_panel:approve_amor108_member' member.id %}" class="btn btn-success btn-sm">Approve</a>
+                                <a href="{% url 'admin_panel:reject_amor108_member' member.id %}" class="btn btn-danger btn-sm">Reject</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No pending Amor108 member approvals.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -40,4 +40,9 @@ urlpatterns = [
     path('members/pending/', views.pending_members, name='pending_members'),
     path('members/approve/<int:profile_id>/', views.approve_member, name='approve_member'),
     path('members/reject/<int:profile_id>/', views.reject_member, name='reject_member'),
+
+    # Amor108 Member Approval URLs
+    path('amor108/pending/', views.pending_amor108_members, name='pending_amor108_members'),
+    path('amor108/approve/<int:member_id>/', views.approve_amor108_member, name='approve_amor108_member'),
+    path('amor108/reject/<int:member_id>/', views.reject_amor108_member, name='reject_amor108_member'),
 ]

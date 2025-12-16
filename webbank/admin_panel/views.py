@@ -15,6 +15,40 @@ from accounts.decorators import admin_required, founder_required
 from decimal import Decimal # Import Decimal for monetary values
 from django.http import HttpResponse # Import HttpResponse
 import csv # Import csv module
+from amor108.models import Member as Amor108Member
+
+@login_required
+@admin_required
+def pending_amor108_members(request):
+    pending_members = Amor108Member.objects.filter(status='pending')
+    context = {
+        'members': pending_members,
+        'user_type': request.user.user_type,
+    }
+    return render(request, 'admin_panel/pending_amor108_members.html', context)
+
+@login_required
+@admin_required
+def approve_amor108_member(request, member_id):
+    member = get_object_or_404(Amor108Member, id=member_id)
+    member.status = 'approved'
+    member.user.is_active = True
+    member.save()
+    member.user.save()
+    messages.success(request, f'Amor108 member {member.user.username} has been approved.')
+    return redirect('admin_panel:pending_amor108_members')
+
+@login_required
+@admin_required
+def reject_amor108_member(request, member_id):
+    member = get_object_or_404(Amor108Member, id=member_id)
+    user = member.user
+    member.status = 'rejected'
+    member.save()
+    user.delete()
+    messages.error(request, f'Amor108 member {user.username} has been rejected and their account deleted.')
+    return redirect('admin_panel:pending_amor108_members')
+
 
 def export_to_csv(filename, headers, data):
     response = HttpResponse(content_type='text/csv')
@@ -359,6 +393,20 @@ def user_edit(request, pk):
     if request.method == 'POST':
         form = UserAdminForm(request.POST, instance=user)
         if form.is_valid():
+            new_user_type = form.cleaned_data['user_type']
+            
+            # Check qualification if trying to set user_type to 'director'
+            if new_user_type == 'director':
+                qualifies, message = check_board_member_qualification(user)
+                if not qualifies:
+                    messages.error(request, f"Cannot set user as Director: {message}")
+                    return render(request, 'admin_panel/user_form.html', {
+                        'form': form,
+                        'user': user,
+                        'title': f'Edit User: {user.username}',
+                        'user_type': request.user.user_type,
+                    })
+            
             form.save()
             # Audit Log
             AuditLog.objects.create(

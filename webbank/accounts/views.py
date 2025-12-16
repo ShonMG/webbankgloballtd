@@ -113,6 +113,9 @@ def profile(request):
     
     return render(request, 'accounts/profile.html', {'form': form})
 
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+
 @login_required
 def settings(request):
     user = request.user
@@ -127,6 +130,22 @@ def settings(request):
         form = UserSettingsForm(instance=user)
     
     return render(request, 'accounts/settings.html', {'form': form})
+
+@login_required
+def password_change(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important! Update the session to prevent user from being logged out
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('accounts:settings')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'accounts/password_change.html', {'form': form})
+
 
 def prolink_network_detail(request):
     return render(request, 'accounts/prolink_network_detail.html')

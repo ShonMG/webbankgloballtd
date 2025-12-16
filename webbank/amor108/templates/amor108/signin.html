@@ -1,0 +1,35 @@
+{% extends 'amor108/base.html' %}
+
+{% block title %}Amor108 - Sign In{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card p-4 shadow-lg" style="max-width: 500px; margin: auto;">
+        <h2 class="text-center fw-bold mb-4 text-primary">Amor108 Sign In</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="{{ form.email.id_for_label }}" class="form-label">Email address</label>
+                {{ form.email }}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                {{ form.password }}
+            </div>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Sign In</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

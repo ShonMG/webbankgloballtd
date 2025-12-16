@@ -12,6 +12,13 @@
                     <h3 class="mb-0">{{ title }}</h3>
                 </div>
                 <div class="card-body">
+                    {% if user %} {# Only show this message when editing an existing user #}
+                        {% if user.user_type != 'director' %}
+                            <div class="alert alert-info" role="alert">
+                                To set a user as 'Director', they must first be an Amor 108 member contributing Ksh 10,000 monthly.
+                            </div>
+                        {% endif %}
+                    {% endif %}
                     <form method="post">
                         {% csrf_token %}
                         {% for field in form %}

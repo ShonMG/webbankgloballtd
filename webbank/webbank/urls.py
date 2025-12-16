@@ -19,6 +19,7 @@ urlpatterns = [
     path('notifications/', include('notifications.urls')),
     path('profiles/', include('profiles.urls')),
     path('messaging/', include('messaging.urls')),
+    path('amor108/', include('amor108.urls')),
 ]
 
 if settings.DEBUG:

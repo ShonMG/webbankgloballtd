@@ -35,6 +35,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 if DEBUG:
     ALLOWED_HOSTS.append('webbankglobal.onrender.com')
     ALLOWED_HOSTS.append('0.0.0.0')
+    ALLOWED_HOSTS.extend(['localhost', '127.0.0.1'])
 
 
 # Application definition
@@ -59,6 +60,17 @@ INSTALLED_APPS = [
     'notifications',
     'profiles',
     'messaging',
+    'amor108',
+    'accounts_amor108',
+    'members_amor108',
+    'pools',
+    'contributions',
+    'investments',
+    'profits',
+    'payments',
+    'governance',
+    'audit',
+    'reports',
 ]
 
 MIDDLEWARE = [

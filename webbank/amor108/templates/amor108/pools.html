@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Amor108 - Pools{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Pools</h1>
+    <div class="list-group">
+        {% for pool in pools %}
+            <a href="{% url 'amor108:pool_detail' pool.id %}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ pool.name }}</h5>
+                </div>
+                <p class="mb-1">Contribution: Ksh {{ pool.contribution_amount }} per {{ pool.get_contribution_frequency_display }}</p>
+            </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

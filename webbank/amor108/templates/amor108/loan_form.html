@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Amor108 - Request a Loan{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Request a Loan</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock %}

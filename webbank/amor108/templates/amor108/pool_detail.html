@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Amor108 - {{ pool.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ pool.name }}</h1>
+    <p>Contribution: Ksh {{ pool.contribution_amount }} per {{ pool.get_contribution_frequency_display }}</p>
+
+    <h2>Members</h2>
+    <ul class="list-group">
+        {% for member in members %}
+            <li class="list-group-item">{{ member.user.username }}</li>
+        {% empty %}
+            <li class="list-group-item">No members in this pool yet.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

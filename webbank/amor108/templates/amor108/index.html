@@ -1,0 +1,126 @@
+{% extends 'amor108/base.html' %}
+{% load static %}
+
+{% block title %}Amor108 - Registration{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card p-4 shadow-lg">
+        <h2 class="text-center fw-bold mb-4 text-primary">AMOR 108 INV REGISTRATION FORM</h2>
+        <p class="text-center text-secondary mb-4">(PLEASE COMPLETE INFORMATION BELOW)</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <fieldset class="mb-4 p-3 border rounded">
+                <legend class="float-none w-auto px-2 fw-bold text-dark">Personal Information</legend>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.first_name.id_for_label }}" class="form-label">FIRST NAME:</label>
+                        {{ signup_form.first_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.last_name.id_for_label }}" class="form-label">LAST NAME:</label>
+                        {{ signup_form.last_name }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.date_of_birth.id_for_label }}" class="form-label">DATE OF BIRTH:</label>
+                        {{ signup_form.date_of_birth }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.residential_area.id_for_label }}" class="form-label">RESIDENTIAL AREA:</label>
+                        {{ signup_form.residential_area }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.mobile_no.id_for_label }}" class="form-label">MOBILE NO:</label>
+                        {{ signup_form.mobile_no }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.email_address.id_for_label }}" class="form-label">EMAIL ADDRESS:</label>
+                        {{ signup_form.email_address }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.passport_photo.id_for_label }}" class="form-label">Passport Photo:</label>
+                        {{ signup_form.passport_photo }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.nationality.id_for_label }}" class="form-label">NATIONALITY:</label>
+                        {{ signup_form.nationality }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.identification_card_no.id_for_label }}" class="form-label">IDENTIFICATION CARD NO:</label>
+                        {{ signup_form.identification_card_no }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.passport_no.id_for_label }}" class="form-label">PASSPORT NO:</label>
+                        {{ signup_form.passport_no }}
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="mb-4 p-3 border rounded">
+                <legend class="float-none w-auto px-2 fw-bold text-dark">NEXT OF KIN</legend>
+                <div class="mb-3">
+                    <label for="{{ signup_form.next_of_kin_names.id_for_label }}" class="form-label">NAMES:</label>
+                    {{ signup_form.next_of_kin_names }}
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.next_of_kin_mobile_no.id_for_label }}" class="form-label">MOBILE NO:</label>
+                        {{ signup_form.next_of_kin_mobile_no }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.next_of_kin_email_address.id_for_label }}" class="form-label">EMAIL ADDRESS:</label>
+                        {{ signup_form.next_of_kin_email_address }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.next_of_kin_identification_passport_no.id_for_label }}" class="form-label">IDENTIFICATION/PASSPORT NO:</label>
+                        {{ signup_form.next_of_kin_identification_passport_no }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ signup_form.next_of_kin_nationality.id_for_label }}" class="form-label">NATIONALITY:</label>
+                        {{ signup_form.next_of_kin_nationality }}
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="mb-4 p-3 border rounded">
+                <legend class="float-none w-auto px-2 fw-bold text-dark">MEMBERSHIP TYPE</legend>
+                <div class="mb-3">
+                    {{ signup_form.membership_pool.errors }}
+                    <label class="form-label fw-bold">GOLD</label>
+                    {% for radio in signup_form.membership_pool %}
+                        <div class="form-check">
+                            {{ radio.tag }}
+                            <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">Register for AMOR 108 INV</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

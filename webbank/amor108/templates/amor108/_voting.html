@@ -1,0 +1,30 @@
+<!-- Voting & Governance -->
+<div class="card shadow mb-4" id="voting">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Voting & Governance</h6>
+    </div>
+    <div class="card-body">
+        <h5>Active Proposals</h5>
+        <ul class="list-group mb-3">
+            {% for proposal in active_proposals %}
+                <li class="list-group-item">{{ proposal.title }} - {{ proposal.details }}</li>
+            {% empty %}
+                <li class="list-group-item text-center">No active proposals.</li>
+            {% endfor %}
+        </ul>
+
+        <p><strong>Voting Power:</strong> {{ voting_power }}</p>
+
+        <h5 class="mt-4">Voting History</h5>
+        <ul class="list-group mb-3">
+            {% for vote in voting_history %}
+                <li class="list-group-item">{{ vote.proposal }} - {{ vote.decision }} ({{ vote.date }})</li>
+            {% empty %}
+                <li class="list-group-item text-center">No voting history.</li>
+            {% endfor %}
+        </ul>
+        <div class="mt-3">
+            <a href="#" class="btn btn-sm btn-primary">Submit Vote</a>
+        </div>
+    </div>
+</div>

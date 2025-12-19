@@ -9,9 +9,9 @@
             <p class="text-muted">Manage your loan applications and repayments</p>
         </div>
         <div class="shares-button mt-2 mt-sm-0"> {# Consistent button structure #}
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loanApplicationModal">
+            <a href="{% url 'loans:webbank_loan_request' %}" class="btn btn-primary">
                 <i class='bxr bx-plus'></i> Apply for Loan
-            </button>
+            </a>
         </div>
     </div>
     <!-- Top Summary Cards -->
@@ -21,9 +21,9 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col">
-                            <h5 class="card-title text-uppercase text-muted mb-0">Total Borrowed</h5>
+                            <h5 class="card-title text-uppercase text-muted mb-0">Highest Approved Loan</h5>
                             <span class="h2 font-weight-bold mb-0">
-                                {% with last_approved_loan=user.loans.all|dictsort:"amount_approved"|last %}
+                                {% with last_approved_loan=loans|dictsort:"amount_approved"|last %}
                                     KES {{ last_approved_loan.amount_approved|default:0|floatformat:2 }}
                                 {% endwith %}
                             </span>
@@ -79,9 +79,9 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col">
-                            <h5 class="card-title text-uppercase text-muted mb-0">Next Payment</h5>
+                            <h5 class="card-title text-uppercase text-muted mb-0">Next Payment Date (Sample)</h5>
                             <span class="h2 font-weight-bold mb-0">
-                                {% with next_payment=user.loans.all|first %}
+                                {% with next_payment=loans|first %}
                                     {{ next_payment.next_payment_date|date:"M j"|default:"N/A" }}
                                 {% endwith %}
                             </span>
@@ -172,9 +172,9 @@
                     <i class='bxr bx-wallet-note' style="font-size: 3rem; color: #ccc;"></i>
                     <h5 class="mt-3">No Loan Applications</h5>
                     <p class="text-muted">You haven't applied for any loans yet.</p>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loanApplicationModal">
+                    <a href="{% url 'loans:webbank_loan_request' %}" class="btn btn-primary">
                         Apply for Your First Loan
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -183,47 +183,5 @@
     </div>
 </div>
 
-<!-- Loan Application Modal -->
-<div class="modal fade" id="loanApplicationModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Apply for Loan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="post">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Loan Type</label>
-                            {{ form.loan_type }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Amount Applied (KES)</label>
-                            {{ form.amount_applied }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Term (Months)</label>
-                            {{ form.term_months }}
-                        </div>
-                        <div class="col-12 mb-3">
-                            <label class="form-label">Purpose</label>
-                            {{ form.purpose }}
-                        </div>
-                        <div class="col-12 mb-3">
-                            <label class="form-label">Guarantors</label>
-                            {{ form.guarantors }}
-                            <small class="form-text text-muted">Select members who will guarantee this loan.</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Submit Application</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+
 {% endblock %}

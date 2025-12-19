@@ -1,0 +1,112 @@
+{% extends 'amor108/base.html' %}
+
+{% block title %}Amor108 - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Amor108 Member Dashboard</h1>
+
+    <div class="row">
+        <div class="col-md-3 sticky-top pb-4">
+            <!-- Sidebar -->
+            <div class="list-group">
+                <a href="{% url 'amor108:dashboard' %}" class="list-group-item list-group-item-action {% if active_page == 'profile' %}active{% endif %}">Member Profile</a>
+                <a href="{% url 'amor108:dashboard_contributions' %}" class="list-group-item list-group-item-action {% if active_page == 'contributions' %}active{% endif %}">Contributions & Savings</a>
+                <a href="{% url 'amor108:dashboard_shares' %}" class="list-group-item list-group-item-action {% if active_page == 'shares' %}active{% endif %}">Shares & Growth Tracker</a>
+                <a href="{% url 'amor108:dashboard_loans' %}" class="list-group-item list-group-item-action {% if active_page == 'loans' %}active{% endif %}">Loans</a>
+                <a href="{% url 'amor108:dashboard_guarantees' %}" class="list-group-item list-group-item-action {% if active_page == 'guarantees' %}active{% endif %}">Guarantees</a>
+                <a href="{% url 'amor108:dashboard_profits' %}" class="list-group-item list-group-item-action {% if active_page == 'profits' %}active{% endif %}">Profit & Interest</a>
+                <a href="{% url 'amor108:dashboard_investments' %}" class="list-group-item list-group-item-action {% if active_page == 'investments' %}active{% endif %}">Investments</a>
+                <a href="{% url 'amor108:dashboard_pools' %}" class="list-group-item list-group-item-action {% if active_page == 'pools' %}active{% endif %}">My Pools</a>
+                <a href="{% url 'amor108:dashboard_voting' %}" class="list-group-item list-group-item-action {% if active_page == 'voting' %}active{% endif %}">Voting & Governance</a>
+                <a href="{% url 'amor108:dashboard_notifications' %}" class="list-group-item list-group-item-action {% if active_page == 'notifications' %}active{% endif %}">Notifications</a>
+                <a href="{% url 'amor108:dashboard_documents' %}" class="list-group-item list-group-item-action {% if active_page == 'documents' %}active{% endif %}">Documents & Reports</a>
+                <a href="{% url 'amor108:dashboard_exit' %}" class="list-group-item list-group-item-action {% if active_page == 'exit' %}active{% endif %}">Exit & Withdrawal</a>
+                <a href="{% url 'amor108:dashboard_support' %}" class="list-group-item list-group-item-action {% if active_page == 'support' %}active{% endif %}">Support & Communication</a>
+                <a href="{% url 'amor108:dashboard_security' %}" class="list-group-item list-group-item-action {% if active_page == 'security' %}active{% endif %}">Security & Settings</a>
+                <a href="{% url 'amor108:dashboard_transparency' %}" class="list-group-item list-group-item-action {% if active_page == 'transparency' %}active{% endif %}">Transparency & Trust</a>
+            </div>
+        </div>
+        <div class="col-md-9 ps-4">
+            <!-- Summary Cards (visible on all dashboard pages) -->
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Contributions</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Ksh {{ total_contributions }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Current Share Value</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Ksh {{ current_share_value }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Accrued Interest / Profit</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Ksh {{ accrued_interest }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-piggy-bank fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Active Loans Balance</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Ksh {{ active_loans_balance }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-credit-card fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content for the specific dashboard section -->
+            {% block dashboard_content %}
+            {% endblock %}
+
+            <!-- Quick Action Buttons (visible on all dashboard pages) -->
+            <div class="mb-4 d-flex justify-content-around flex-wrap">
+                <a href="{% url 'contributions:make_contribution' %}" class="btn btn-primary m-2">Make Contribution</a>
+                <a href="{% url 'payments:payment_history' %}" class="btn btn-dark m-2">Payment History</a>
+                <a href="{% url 'profits:member_profits_list' %}" class="btn btn-info m-2">Profit History</a>
+                <a href="{% url 'amor108:loan_request' %}" class="btn btn-success m-2">Apply for Loan</a>
+                <a href="{% url 'profits:reinvest_profit' member.pk %}" class="btn btn-info m-2">Reinvest Profits</a>
+                <a href="#" class="btn btn-secondary m-2">Download Statement</a>
+                <a href="{% url 'messaging:new_conversation' %}" class="btn btn-warning m-2">Message Manager</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

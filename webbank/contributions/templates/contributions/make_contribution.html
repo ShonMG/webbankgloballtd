@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container">
+    <h2>Make a Contribution</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.amount.id_for_label }}" class="form-label">Amount</label>
+            {% render_field form.amount class="form-control" %}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.date.id_for_label }}" class="form-label">Date</label>
+            {% render_field form.date class="form-control" %}
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock %}

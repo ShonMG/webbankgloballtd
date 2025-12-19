@@ -180,7 +180,13 @@
                         <tbody>
                             {% for loan in recent_loans %}
                             <tr>
-                                <td>{{ loan.member.get_full_name|default:loan.member.username }}</td>
+                                <td>
+                                    {% if loan.member %}
+                                        {{ loan.member.get_full_name|default:loan.member.username }}
+                                    {% else %}
+                                        {{ loan.guest_first_name }} {{ loan.guest_last_name }} ({{ loan.guest_email }})
+                                    {% endif %}
+                                </td>
                                 <td>{{ loan.loan_type.name }}</td>
                                 <td>KES {{ loan.amount_applied|floatformat:2 }}</td>
                                 <td>{{ loan.application_date|date:"M d, Y" }}</td>

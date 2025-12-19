@@ -1,0 +1,15 @@
+{% extends 'amor108/base.html' %}
+
+{% block title %}Pending Approval{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card p-4 shadow-lg text-center">
+        <h2 class="text-warning mb-4">Account Awaiting Approval</h2>
+        <p class="lead">{{ message }}</p>
+        <p>Thank you for your registration. Please wait for an administrator to review and approve your account.</p>
+        <p>You will be notified once your account has been approved.</p>
+        <a href="{% url 'accounts_amor108:logout' %}" class="btn btn-primary mt-3">Logout</a>
+    </div>
+</div>
+{% endblock %}

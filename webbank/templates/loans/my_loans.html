@@ -5,10 +5,13 @@
 
 {% block content %}
 <div class="main-content">
-    <div class="row">
-        <div class="col-md-12">
+    <div class="row align-items-center">
+        <div class="col-md-9">
             <h2>My Loans</h2>
-            <p class="text-muted">Overview of all your loan applications and their statuses.</p>
+            <p class="text-muted mb-0">Overview of all your loan applications and their statuses.</p>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="{% url 'loans:webbank_loan_request' %}" class="btn btn-primary">Apply for New Loan</a>
         </div>
     </div>
 
@@ -45,7 +48,7 @@
                                 <td><span class="badge bg-{% if loan.status == 'approved' or loan.status == 'disbursed' or loan.status == 'active' %}success{% elif loan.status == 'rejected' or loan.status == 'defaulted' %}danger{% else %}info{% endif %}">{{ loan.get_status_display }}</span></td>
                                 <td>{{ loan.application_date|date:"M d, Y" }}</td>
                                 <td>
-                                    <a href="{% url 'loans:loan_detail' pk=loan.pk %}" class="btn btn-sm btn-primary">View</a>
+                                    <a href="{% url 'loans:repay_loan' pk=loan.pk %}" class="btn btn-sm btn-primary">View / Repay</a>
                                 </td>
                             </tr>
                             {% empty %}
@@ -62,7 +65,7 @@
 
     <div class="row mt-4">
         <div class="col-md-12 text-center">
-            <a href="{% url 'loans:loans_dashboard' %}" class="btn btn-secondary">Back to Loan Application</a>
+            <a href="{% url 'loans:loans_dashboard' %}" class="btn btn-secondary">Back to Loans Dashboard</a>
         </div>
     </div>
 </div>

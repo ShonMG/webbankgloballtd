@@ -4,7 +4,8 @@ from . import views
 app_name = 'admin_panel'
 
 urlpatterns = [
-    path('', views.admin_dashboard, name='admin_dashboard'),
+    path('', views.admin_dashboard, name='admin_dashboard'), # Original position restored
+
     path('founder-dashboard/', views.founder_dashboard, name='founder_dashboard'),
     path('loan-approvals/', views.loan_approval_list, name='loan_approval_list'),
     path('loan-approvals/<int:loan_id>/', views.loan_approval_detail, name='loan_approval_detail'),

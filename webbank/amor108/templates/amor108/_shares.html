@@ -1,0 +1,24 @@
+<!-- Shares & Growth Tracker -->
+<div class="card shadow mb-4" id="shares">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Shares & Growth Tracker</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Total Shares Owned:</strong> {{ total_shares_owned }}</p>
+                <p><strong>Reinvested Interest Amount:</strong> Ksh {{ reinvested_interest_amount }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Share Value per Unit:</strong> Ksh {{ share_value_per_unit }}</p>
+                <p><strong>Total Share Value:</strong> Ksh {{ total_share_value_tracker }}</p>
+            </div>
+        </div>
+        <h5 class="mt-4">Share Growth Over Time (Chart)</h5>
+        <div class="chart-area">
+            {# TODO: Implement Share Growth Over Time Chart using a JavaScript charting library like Chart.js #}
+            <canvas id="shareGrowthChart"></canvas>
+        </div>
+        <p class="text-muted small mt-3">How shares increase from: Contributions, Reinvested profits</p>
+    </div>
+</div>

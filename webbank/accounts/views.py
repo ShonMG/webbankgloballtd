@@ -41,6 +41,17 @@ def signin(request):
                 if user is not None:
                     login(request, user)
                     messages.success(request, f'Welcome back, {user.first_name}!')
+                    
+                    # Check if the user has an Amor108Profile
+                    if hasattr(user, 'amor108profile'):
+                        if user.amor108profile.is_approved:
+                            return redirect('amor108:dashboard')
+                        else:
+                            return render(request, 'amor108/pending_approval.html', {
+                                'message': 'Your account is awaiting approval from the admin.'
+                            })
+                    
+                    # Default redirect for non-Amor108 members or if amor108profile doesn't exist
                     return redirect('dashboard:main_dashboard')
                 else:
                     messages.error(request, 'Invalid password.')
@@ -152,3 +163,9 @@ def prolink_network_detail(request):
 
 def amor_108_inv_detail(request):
     return render(request, 'accounts/amor_108_inv_detail.html')
+
+def loan_options(request):
+    """
+    Presents the user with options to request a loan from WebBank or Amor108.
+    """
+    return render(request, 'accounts/loan_options.html')

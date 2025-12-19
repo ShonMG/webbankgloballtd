@@ -5,7 +5,7 @@ from django.db.models.functions import ExtractMonth, ExtractYear
 from django.utils import timezone
 from accounts.models import User
 from loans.models import Loan, LoanApprovalLog, LoanType
-from shares.models import Share, ShareConfig
+from shares.models import Share, ShareConfig, ShareTransaction
 from admin_panel.models import SaccoConfiguration, AuditLog # Import AuditLog
 from admin_panel.forms import LoanTypeForm, ShareConfigForm, SaccoConfigurationForm, UserAdminForm, NotificationSettingForm, NotificationTemplateForm
 from notifications.models import NotificationSetting, NotificationTemplate
@@ -15,12 +15,12 @@ from accounts.decorators import admin_required, founder_required
 from decimal import Decimal # Import Decimal for monetary values
 from django.http import HttpResponse # Import HttpResponse
 import csv # Import csv module
-from amor108.models import Member as Amor108Member
+from members_amor108.models import Member as Amor108Member
 
 @login_required
 @admin_required
 def pending_amor108_members(request):
-    pending_members = Amor108Member.objects.filter(status='pending')
+    pending_members = Amor108Member.objects.filter(status__name='pending')
     context = {
         'members': pending_members,
         'user_type': request.user.user_type,
@@ -587,7 +587,7 @@ def loan_performance_report(request):
     ).order_by('-total_approved')[:5]
 
     all_loan_types = LoanType.objects.all()
-    all_loan_statuses = Loan.STATUS_CHOICES # Assuming STATUS_CHOICES exists on Loan model
+    all_loan_statuses = Loan.LOAN_STATUS # Corrected to LOAN_STATUS
 
     context = {
         'total_loans_count': total_loans_count,
@@ -710,17 +710,16 @@ def share_value_trends_report(request):
 
     share_value_data = []
     if selected_year:
-        # Assuming 'Share' model has 'purchase_date' and 'total_value'
-        # Or, if we have a ShareTransaction model, we would use that.
-        # For simplicity, we'll aggregate Share total_value by month based on purchase_date.
-        # A more accurate trend would involve daily/monthly snapshots of all active shares.
+        # Use ShareTransaction model to get share value trends based on transaction_date.
+        # This provides an accurate trend of share purchases over time.
         
-        shares_by_month_query = Share.objects.filter(
-            purchase_date__year=selected_year
+        shares_by_month_query = ShareTransaction.objects.filter(
+            transaction_date__year=selected_year,
+            transaction_type='purchase'  # Consider only purchases for value trend
         ).annotate(
-            month=ExtractMonth('purchase_date')
+            month=ExtractMonth('transaction_date')
         ).values('month').annotate(
-            total_value=Sum('total_value')
+            total_value=Sum('total_amount')
         ).order_by('month')
 
         # Initialize values for all 12 months to 0
@@ -729,16 +728,17 @@ def share_value_trends_report(request):
             monthly_values[entry['month']] = entry['total_value']
         
         # Format for Chart.js
+        from datetime import datetime
         for month_num in range(1, 13):
             share_value_data.append({
                 'month': datetime(1, month_num, 1).strftime('%b'),
                 'value': monthly_values[month_num]
             })
 
-    # Get a list of available years for filtering
-    available_years = Share.objects.filter(purchase_date__isnull=False).annotate(
-        year=ExtractYear('purchase_date')
-    ).values_list('year', flat=True).distinct().order_by('year')
+    # Get a list of available years for filtering from ShareTransaction
+    available_years = ShareTransaction.objects.filter(transaction_date__isnull=False).annotate(
+        year=ExtractYear('transaction_date')
+    ).values_list('year', flat=True).distinct().order_by('-year')
 
     context = {
         'share_value_data': share_value_data,
@@ -804,7 +804,7 @@ def financial_statements_report(request):
     loans_repaid = Loan.objects.filter(loan_repayments__payment_date__lte=end_date, status__in=['active', 'completed', 'disbursed']).aggregate(total=Sum('loan_repayments__amount'))['total'] or Decimal('0.00')
     loans_receivable = loans_disbursed - loans_repaid
 
-    investments_shares = Share.objects.filter(purchase_date__lte=end_date).aggregate(total=Sum('total_value'))['total'] or Decimal('0.00')
+    investments_shares = ShareTransaction.objects.filter(transaction_date__lte=end_date).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
 
     total_assets = cash_balance + loans_receivable + investments_shares
 
@@ -815,10 +815,11 @@ def financial_statements_report(request):
     total_liabilities = member_deposits + loans_payable
 
     # Equity
-    share_capital = Share.objects.filter(purchase_date__lte=end_date).aggregate(total=Sum('units') * Avg('share_config__current_share_price'))['total'] or Decimal('0.00')
-    # If Share model 'total_value' is accurate representation of share capital, use that.
-    # Otherwise, need to calculate based on units and price. Assuming 'total_value' is sufficient.
-    share_capital = Share.objects.filter(purchase_date__lte=end_date).aggregate(total=Sum('total_value'))['total'] or Decimal('0.00')
+    # Calculate share capital by summing all share purchase transactions up to the end_date.
+    share_capital = ShareTransaction.objects.filter(
+        transaction_date__lte=end_date,
+        transaction_type='purchase'
+    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
 
     # Retained Earnings (simplified: accumulated net income)
     # This requires summing up net income over all past periods, which is complex.

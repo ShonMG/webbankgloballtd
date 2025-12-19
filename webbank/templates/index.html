@@ -16,7 +16,9 @@
         }
         .hero-section {
             background: #000;
-            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+            background-image: url("{% static 'webbank/images/hero.png' %}"); /* Use the static hero image */
+            background-size: cover; /* Cover the entire section */
+            background-position: center; /* Center the image */
             color: white;
             padding: 120px 0;
             text-align: center;
@@ -100,7 +102,7 @@
                 <p>Founded in 2018, Webbank Global Ltd was established with a clear mission: to help individuals and communities grow their finances by pooling resources and investing together. We believe in the power of unity and shared success.</p>
                 <div>
                     <a href="{% url 'accounts:signup' %}" class="btn btn-primary">Register / Join Now</a>
-                    <a href="#" class="btn btn-outline-light">Request Loan</a>
+                    <a href="{% url 'accounts:loan_options' %}" class="btn btn-outline-light">Request Loan Options</a>
                     <a href="#about" class="btn btn-secondary">Learn More</a>
                 </div>
                 <div class="mt-5 mb-5 d-flex justify-content-center">

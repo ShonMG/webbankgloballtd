@@ -9,4 +9,5 @@ urlpatterns = [
     path('declare-dividend/', views.declare_dividend, name='declare_dividend'),
     path('dividends/', views.dividend_list, name='dividend_list'),
     path('approve-dividend/<int:dividend_id>/', views.approve_dividend, name='approve_dividend'),
+    path('performance/', views.view_performance, name='view_performance'),
 ]

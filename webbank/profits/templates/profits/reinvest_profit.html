@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Reinvest Profit</h2>
+    <div class="card">
+        <div class="card-header">
+            Confirm Reinvestment
+        </div>
+        <div class="card-body">
+            <p>You are about to reinvest <strong>Ksh {{ member_profit.net_profit }}</strong> from the profit cycle <strong>{{ member_profit.profit_cycle.name }}</strong> into shares.</p>
+            <p>This will increase your share units based on the current share unit price.</p>
+            <p>Please confirm your action.</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Confirm Reinvestment</button>
+                <a href="{% url 'profits:member_profits_list' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

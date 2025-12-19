@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>My Profit Allocations</h2>
+
+    {% if member_profits %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Profit Cycle</th>
+                    <th>Allocated Profit</th>
+                    <th>Tax Amount</th>
+                    <th>Net Profit</th>
+                    <th>Status</th>
+                    <th>Action Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mp in member_profits %}
+                <tr>
+                    <td>{{ mp.profit_cycle.name }}</td>
+                    <td>Ksh {{ mp.allocated_profit }}</td>
+                    <td>Ksh {{ mp.tax_amount }}</td>
+                    <td>Ksh {{ mp.net_profit }}</td>
+                    <td>{{ mp.get_action_display }}</td>
+                    <td>{{ mp.action_date|default:"N/A" }}</td>
+                    <td>
+                        {% if mp.action == 'PENDING' %}
+                            <a href="{% url 'profits:withdraw_profit' mp.pk %}" class="btn btn-sm btn-danger">Withdraw</a>
+                            <a href="{% url 'profits:reinvest_profit' mp.pk %}" class="btn btn-sm btn-success">Reinvest</a>
+                        {% else %}
+                            <span class="text-muted">Actioned</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No profit allocations found for you yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

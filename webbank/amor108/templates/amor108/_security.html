@@ -1,0 +1,15 @@
+<!-- Security & Settings -->
+<div class="card shadow mb-4" id="security">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Security & Settings</h6>
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            <a href="{% url 'accounts:password_change' %}" class="list-group-item list-group-item-action">Change Password</a>
+            <span class="list-group-item">Two-Factor Authentication: <strong>{{ two_factor_auth_status }}</strong></span>
+            <a href="{% url 'accounts:settings' %}" class="list-group-item list-group-item-action">Device Login History</a>
+            <a href="{% url 'accounts:settings' %}" class="list-group-item list-group-item-action">Notification Preferences</a>
+            <a href="{% url 'accounts:logout' %}" class="list-group-item list-group-item-action text-danger">Logout</a>
+        </div>
+    </div>
+</div>

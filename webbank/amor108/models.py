@@ -9,21 +9,8 @@ class Pool(models.Model):
     def __str__(self):
         return self.name
 
-class Member(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
-    ]
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    pool = models.ForeignKey(Pool, on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
-
-    def __str__(self):
-        return self.user.username
-
 class Contribution(models.Model):
-    member = models.ForeignKey(Member, on_delete=models.CASCADE)
+    member = models.ForeignKey('members_amor108.Member', on_delete=models.CASCADE) # Link to members_amor108.Member
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField(auto_now_add=True)
 
@@ -39,7 +26,7 @@ class Loan(models.Model):
         ('active', 'Active'),
         ('paid', 'Paid'),
     ]
-    member = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True)
+    member = models.ForeignKey('members_amor108.Member', on_delete=models.CASCADE, null=True, blank=True) # Link to members_amor108.Member
     non_member_name = models.CharField(max_length=255, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)

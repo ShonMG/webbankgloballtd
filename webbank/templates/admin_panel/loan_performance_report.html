@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load admin_panel_tags %}
 
 {% block title %}Loan Performance Report{% endblock %}
 
@@ -173,11 +174,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
+{{ loans_by_status|json_script:"loanStatusData" }}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const loanStatusData = JSON.parse('{{ loans_by_status|json_script:"loanStatusData" }}');
+        const loanStatusData = JSON.parse(document.getElementById('loanStatusData').textContent);
         const labels = loanStatusData.map(item => item.status);
         const data = loanStatusData.map(item => item.count);
 

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">{{ pool.name }}</h2>
+    </div>
+    <div class="card-body">
+      <p class="card-text">{{ pool.description }}</p>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">Contribution Amount: {{ pool.contribution_amount }}</li>
+        <li class="list-group-item">Contribution Frequency: {{ pool.get_contribution_frequency_display }}</li>
+        <li class="list-group-item">Member Limit: {{ pool.member_limit }}</li>
+        <li class="list-group-item">Members: {{ pool.member_count }}/{{ pool.member_limit }}</li>
+        <li class="list-group-item">Manager: {{ pool.manager }}</li>
+        <li class="list-group-item">Status: {% if pool.is_locked %}Locked{% else %}Open{% endif %}</li>
+      </ul>
+    </div>
+    <div class="card-footer text-muted">
+      Creation Date: {{ pool.creation_date|date:"F d, Y" }}
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <h3>Pool Members</h3>
+    {% if pool.members.all %}
+      <ul class="list-group">
+        {% for member in pool.members.all %}
+          <li class="list-group-item">{{ member.username }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No members yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="mt-4">
+      {% if not pool.is_locked and request.user not in pool.members.all %}
+          <form method="post" action="{% url 'pools:pool_join' pool.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-success">Join Pool</button>
+          </form>
+      {% elif request.user in pool.members.all %}
+          <p>You are already a member of this pool.</p>
+      {% else %}
+          <p>This pool is currently locked.</p>
+      {% endif %}
+  </div>
+{% endblock %}

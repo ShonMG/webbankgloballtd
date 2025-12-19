@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Withdraw Profit</h2>
+    <div class="card">
+        <div class="card-header">
+            Confirm Withdrawal
+        </div>
+        <div class="card-body">
+            <p>You are about to withdraw <strong>Ksh {{ member_profit.net_profit }}</strong> from the profit cycle <strong>{{ member_profit.profit_cycle.name }}</strong>.</p>
+            <p>Please confirm your action. Once withdrawn, this action cannot be undone.</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Confirm Withdrawal</button>
+                <a href="{% url 'profits:member_profits_list' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

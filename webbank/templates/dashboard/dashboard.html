@@ -10,8 +10,8 @@
             <h2>Welcome, {{ user.get_full_name|default:user.username }}!</h2>
             <p class="text-muted fs-4">({{ user.get_user_type_display }})</p> {# Moved smaller text here #}
         </div>
-        <div class="shares-button mt-2 mt-sm-0"> {# Consistent button structure (empty for now) #}
-            {# No button needed here, but keeping structure consistent #}
+        <div class="shares-button mt-2 mt-sm-0">
+            <a href="{% url 'loans:loans_dashboard' %}" class="btn btn-primary">Apply for Loan</a>
         </div>
     </div>
 
@@ -181,7 +181,8 @@
             <div class="card p-3">
                 <h3>Director Specific Content</h3>
                 <p>As a Director, you have additional responsibilities and oversight. You can view pending loan approvals for director review.</p>
-                <a href="{% url 'loans:director_loan_approvals' %}" class="btn btn-info">View Loan Approvals (Director)</a>
+                <!-- <a href="{% url 'loans:director_loan_approvals' %}" class="btn btn-info">View Loan Approvals (Director)</a> -->
+                <p class="text-muted small mt-2">Note: Director loan approval page is under development.</p>
                 {# This URL might need to be created in the loans app urls.py #}
             </div>
         </div>
@@ -192,7 +193,7 @@
             <div class="card p-3">
                 <h3>Guarantor Specific Content</h3>
                 <p>As a Guarantor, you may have pending guarantee requests or an overview of loans you have guaranteed.</p>
-                <a href="{% url 'guarantees:my_guarantees' %}" class="btn btn-info">View My Guarantees</a>
+                <a href="{% url 'guarantees:guarantees_dashboard' %}" class="btn btn-info">View My Guarantees</a>
                 {# This URL might need to be created in the guarantees app urls.py #}
             </div>
         </div>

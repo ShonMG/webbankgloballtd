@@ -12,7 +12,7 @@ def is_admin(user):
 @user_passes_test(is_admin)
 def members_dashboard(request):
     members_list = User.objects.filter(user_type='member').annotate(
-        total_shares_value=Coalesce(Sum('share__total_value'), Value(0), output_field=models.DecimalField()) # Add output_field
+        total_shares_value=Coalesce(Sum('amor108_member__share_account__total_value'), Value(0), output_field=models.DecimalField())
     ).order_by('-date_joined')
     
     # Statistics

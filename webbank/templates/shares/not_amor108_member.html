@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Shares Access Denied{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card text-center">
+                    <div class="card-header">
+                        <h3 class="mb-0">Shareholding Information Not Available</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            This section is available only to AMOR108 members.
+                        </p>
+                        <p class="card-text">
+                            Your current account type does not have access to shareholding features. If you believe this is an error or wish to become an AMOR108 member, please contact support.
+                        </p>
+                        <a href="{% url 'dashboard:main_dashboard' %}" class="btn btn-primary">Return to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

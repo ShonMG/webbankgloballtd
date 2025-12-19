@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load admin_panel_tags %}
 
 {% block title %}Member Growth Report{% endblock %}
 
@@ -57,9 +58,10 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ members_by_month_data|json_script:"memberGrowthData" }}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const memberGrowthData = JSON.parse('{{ members_by_month_data|json_script:"memberGrowthData" }}');
+        const memberGrowthData = JSON.parse(document.getElementById('memberGrowthData').textContent);
         const labels = memberGrowthData.map(item => item.month);
         const data = memberGrowthData.map(item => item.count);
 

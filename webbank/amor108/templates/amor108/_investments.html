@@ -1,0 +1,19 @@
+<!-- Investments & Pool Performance -->
+<div class="card shadow mb-4" id="investments">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Investments & Pool Performance</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Pool Total Fund Value:</strong> Ksh {{ pool_total_fund_value }}</p>
+                <p><strong>Active Investments:</strong> {{ active_investments }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Pool Returns Generated:</strong> Ksh {{ pool_returns_generated }}</p>
+                <p><strong>Member’s Share of Pool Returns:</strong> Ksh {{ members_share_of_pool_returns }}</p>
+            </div>
+        </div>
+        <p class="text-muted small mt-3">(Read-only for members)</p>
+    </div>
+</div>

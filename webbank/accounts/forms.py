@@ -4,10 +4,10 @@ from .models import User
 
 class LoginForm(forms.Form):
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter your email'})
+        widget=forms.EmailInput(attrs={'class': 'form-control form-control-lg', 'placeholder': 'Enter your email'})
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter your password'})
+        widget=forms.PasswordInput(attrs={'class': 'form-control form-control-lg', 'placeholder': 'Enter your password'})
     )
 
 class SignUpForm(forms.ModelForm): # Inherit from forms.ModelForm
@@ -39,7 +39,7 @@ class SignUpForm(forms.ModelForm): # Inherit from forms.ModelForm
         }
 
         for field_name, field in self.fields.items():
-            field.widget.attrs.update({'class': 'form-control'})
+            field.widget.attrs.update({'class': 'form-control form-control-lg'})
             if field_name in placeholders:
                 field.widget.attrs['placeholder'] = placeholders[field_name]
     
@@ -79,11 +79,86 @@ class ProfileUpdateForm(forms.ModelForm):
             self.fields[field].widget.attrs.update({'class': 'form-control'})
 
 class UserSettingsForm(forms.ModelForm):
+    # Profile Information (already there)
+    # Security & Privacy
+    profile_visibility = forms.ChoiceField(
+        choices=User.PROFILE_VISIBILITY_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select w-auto'})
+    )
+    two_factor_enabled = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+    # Notification Preferences
+    email_notifications = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    sms_notifications = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    loan_status_notifications = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    payment_reminders = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    share_dividend_notifications = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    system_maintenance_notifications = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+    # Appearance & Language
+    preferred_language = forms.ChoiceField(
+        choices=User.PREFERRED_LANGUAGE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    preferred_currency = forms.ChoiceField(
+        choices=User.PREFERRED_CURRENCY_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    dark_mode_enabled = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'phone_number', 'address')
+        fields = (
+            'first_name', 'last_name', 'email', 'phone_number', 'address',
+            'profile_visibility', 'two_factor_enabled',
+            'email_notifications', 'sms_notifications',
+            'loan_status_notifications', 'payment_reminders',
+            'share_dividend_notifications', 'system_maintenance_notifications',
+            'preferred_language', 'preferred_currency', 'dark_mode_enabled',
+        )
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in self.fields:
-            self.fields[field].widget.attrs.update({'class': 'form-control'})
+        # Apply form-control to specific fields not covered by custom widgets above
+        for field_name in ['first_name', 'last_name', 'email', 'phone_number', 'address']:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs.update({'class': 'form-control'})
+
+        # Update attrs for checkbox fields to match template's fs-5 switch
+        for field_name in ['two_factor_enabled', 'email_notifications', 'sms_notifications',
+                           'loan_status_notifications', 'payment_reminders',
+                           'share_dividend_notifications', 'system_maintenance_notifications',
+                           'dark_mode_enabled']:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs.update({'class': 'form-check-input fs-5'})

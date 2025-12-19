@@ -1,0 +1,40 @@
+{% extends 'base_no_nav.html' %}
+
+{% block title %}Loan Options{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white text-center">
+            <h2 class="fw-bold mb-0">Choose Your Loan Path</h2>
+        </div>
+        <div class="card-body p-4 p-md-5 text-center">
+            <p class="lead mb-5">Select the loan option that best fits your needs.</p>
+
+            <div class="row justify-content-center g-4">
+                <div class="col-lg-5">
+                    <div class="card h-100 shadow-sm border-light-subtle">
+                        <div class="card-body d-flex flex-column align-items-center">
+                            <i class="fas fa-university fa-3x text-success mb-3"></i>
+                            <h4 class="card-title text-success fw-bold mb-3">WebBank Loan</h4>
+                            <p class="card-text text-muted">For all users, whether you're an Amor108 member or not. Standard terms apply.</p>
+                            <a href="{% url 'loans:webbank_loan_request' %}" class="btn btn-success btn-lg mt-auto">Request WebBank Loan</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="card h-100 shadow-sm border-light-subtle">
+                        <div class="card-body d-flex flex-column align-items-center">
+                            <i class="fas fa-users fa-3x text-info mb-3"></i>
+                            <h4 class="card-title text-info fw-bold mb-3">Amor108 Loan</h4>
+                            <p class="card-text text-muted">Exclusive loan products for Amor108 members. Membership is required.</p>
+                            <a href="{% url 'accounts_amor108:signup' %}" class="btn btn-info btn-lg mt-auto">Request Amor108 Loan</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-5 text-muted small">Already an Amor108 member? <a href="{% url 'amor108:dashboard' %}" class="fw-bold">Go to your Amor108 Dashboard</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

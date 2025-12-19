@@ -4,31 +4,66 @@
 {% block title %}Sign In - WebBank{% endblock %}
 
 {% block content %}
-    <div class="card p-4" style="max-width: 500px; width: 100%;">
-        <div class="text-center mb-4">
-            <h5 class="fw-bold">WebBank Sign In</h5>
-            <p class="text-muted mb-0">Enter your credentials to access your account</p>
-        </div>
+<div class="card shadow-lg border-0" style="max-width: 500px; width: 100%;">
+    <div class="card-header bg-primary text-white text-center">
+        <h4 class="fw-bold mb-0">Welcome Back!</h4>
+    </div>
+    <div class="card-body p-4 p-md-5">
+        <p class="text-center text-muted mb-4">Enter your credentials to access your account.</p>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
 
         <form method="post">
             {% csrf_token %}
-            <div class="mb-3">
-                <label class="form-label">Email</label>
-                {{ form.email }}
+            <div class="mb-4">
+                <label for="{{ form.email.id_for_label }}" class="form-label fw-bold">Email</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+                    {{ form.email }}
+                </div>
+                {% for error in form.email.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                {{ form.password }}
+            <div class="mb-4">
+                <label for="{{ form.password.id_for_label }}" class="form-label fw-bold">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                    {{ form.password }}
+                </div>
+                {% for error in form.password.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
             </div>
 
-            <div class="d-grid mb-3">
-                <button type="submit" class="btn btn-dark">Sign In</button>
+            <div class="d-grid mb-4">
+                <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
             </div>
 
             <div class="text-center">
-                <small class="text-muted">Don't have an account? <a href="{% url 'accounts:signup' %}" class="text-primary">Sign Up</a></small>
+                <small class="text-muted">Don't have an account? <a href="{% url 'accounts:signup' %}" class="fw-bold text-primary">Sign Up</a></small>
             </div>
-        </form>
+            
+            <!-- COMMENTED OUT FOR LATER IMPLEMENTATION -->
+            <!--
+                        <div class="text-center my-4">
+                            <hr>
+                            <span class="text-muted small bg-white px-2" style="margin-top: -2.2em; display: inline-block;">OR</span>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="#" class="btn btn-danger disabled"><i class="bi bi-google me-2"></i> Sign in with Google</a>
+                            <a href="#" class="btn btn-info disabled"><i class="bi bi-facebook me-2"></i> Sign in with Facebook</a>
+                        </div>
+                        -->        </form>
     </div>
+</div>
 {% endblock %}

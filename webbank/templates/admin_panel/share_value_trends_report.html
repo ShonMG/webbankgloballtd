@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load admin_panel_tags %}
 
 {% block title %}Share Value Trends Report{% endblock %}
 
@@ -57,11 +58,12 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ share_value_data|json_script:"shareValueData" }}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const shareValueData = JSON.parse('{{ share_value_data|json_script:"shareValueData" }}');
+        const shareValueData = JSON.parse(document.getElementById('shareValueData').textContent);
         const labels = shareValueData.map(item => item.month);
-        const data = shareValueData.map(item => parseFloat(item.value)); // Ensure numeric data
+        const data = shareValueData.map(item => parseFloat(item.value));
 
         if (document.getElementById('shareValueTrendChart')) {
             new Chart(document.getElementById('shareValueTrendChart'), {

@@ -1,0 +1,17 @@
+<!-- Documents & Reports -->
+<div class="card shadow mb-4" id="documents">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Documents & Reports</h6>
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            {% for doc in documents_reports %}
+            <a href="{{ doc.url }}" class="list-group-item list-group-item-action">
+                {{ doc.name }} <span class="badge bg-secondary">{{ doc.format }}</span>
+            </a>
+            {% empty %}
+            <p class="text-center">No documents or reports available.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>

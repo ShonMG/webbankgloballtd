@@ -8,34 +8,43 @@ import string
 from .models import Share, ShareTransaction, Dividend, ShareConfig
 from .forms import SharePurchaseForm, ShareGoalForm, DividendForm # Import DividendForm
 from accounts.models import User
+from members_amor108.models import Member as Amor108Member # Import Amor108Member
 from django.core import serializers # Import serializers
 from django.contrib.admin.views.decorators import staff_member_required
 
 @login_required
 def shares_dashboard(request):
     user = request.user
-    
-    # Get or create the user's single share object
-    share, created = Share.objects.get_or_create(member=user) # Use get_or_create directly here
+
+    # If user is admin, show a list of all shares
+    if user.is_staff:
+        all_shares = Share.objects.all().select_related('member__user')
+        return render(request, 'shares/all_shares_admin.html', {'shares': all_shares, 'user_type': user.user_type})
+
+    # If regular user, check if they are an AMOR108 member
+    if not hasattr(user, 'amor108_member'):
+        return render(request, 'shares/not_amor108_member.html')
+
+    amor108_member = user.amor108_member
+    share, created = Share.objects.get_or_create(member=amor108_member)
 
     # Initialize forms
     purchase_form = SharePurchaseForm()
-    share_goal_form = ShareGoalForm(instance=share) # Pre-fill with existing target
+    share_goal_form = ShareGoalForm(instance=share)
 
     if request.method == 'POST':
-        if 'purchase_submit' in request.POST: # Check which form was submitted
+        if 'purchase_submit' in request.POST:
             purchase_form = SharePurchaseForm(request.POST)
             if purchase_form.is_valid():
                 units = purchase_form.cleaned_data['units']
-                unit_price = Decimal('100.00') # Assuming unit price is always 100.00 as per models.py default
+                unit_price = ShareConfig.objects.first().current_unit_price if ShareConfig.objects.exists() else Decimal('100.00')
                 total_amount = units * unit_price
                 
                 share.units += units
                 share.save() # This will update total_value
                 
-                # Create transaction record
                 ShareTransaction.objects.create(
-                    member=user,
+                    member=amor108_member,
                     transaction_type='purchase',
                     units=units,
                     unit_price=unit_price,
@@ -48,7 +57,7 @@ def shares_dashboard(request):
                 messages.success(request, f'Successfully purchased {units} shares!')
                 return redirect('shares:shares_dashboard')
         
-        elif 'set_goal_submit' in request.POST: # Check which form was submitted
+        elif 'set_goal_submit' in request.POST:
             share_goal_form = ShareGoalForm(request.POST, instance=share)
             if share_goal_form.is_valid():
                 share_goal_form.save()
@@ -57,13 +66,11 @@ def shares_dashboard(request):
             else:
                 messages.error(request, 'Error updating monthly share target. Please check your input.')
 
-
     purchase_history = ShareTransaction.objects.filter(
-        member=user, 
+        member=amor108_member, 
         transaction_type='purchase'
     ).order_by('-transaction_date')
     
-    # Define targets as Decimal to avoid float issues in templates
     overall_target = Decimal('200000.00')
     total_share_cap = Decimal('2000000.00')
 
@@ -72,11 +79,11 @@ def shares_dashboard(request):
         'total_units': share.units,
         'total_value': share.total_value,
         'purchase_history': purchase_history,
-        'purchase_form': purchase_form, # Renamed for clarity
-        'share_goal_form': share_goal_form, # New form
+        'purchase_form': purchase_form,
+        'share_goal_form': share_goal_form,
         'user_type': user.user_type,
-        'overall_target': overall_target, # Pass to context
-        'total_share_cap': total_share_cap, # Pass to context
+        'overall_target': overall_target,
+        'total_share_cap': total_share_cap,
     }
     
     return render(request, 'shares/shares.html', context)
@@ -85,8 +92,17 @@ def shares_dashboard(request):
 @login_required
 def transactions_history(request):
     user = request.user
-    # Fetch all share transactions for the user, ordered by date
-    all_transactions = ShareTransaction.objects.filter(member=user).order_by('-transaction_date')
+
+    if user.is_staff:
+        # Admins should see all transactions or be redirected
+        # Redirecting to admin shares dashboard is a good default
+        return redirect('shares:shares_dashboard')
+
+    if not hasattr(user, 'amor108_member'):
+        return render(request, 'shares/not_amor108_member.html')
+
+    amor108_member = user.amor108_member
+    all_transactions = ShareTransaction.objects.filter(member=amor108_member).order_by('-transaction_date')
     
     context = {
         'all_transactions': all_transactions,
@@ -97,14 +113,21 @@ def transactions_history(request):
 @login_required
 def view_performance(request):
     user = request.user
-    transactions = ShareTransaction.objects.filter(member=user).order_by('transaction_date')
+
+    if user.is_staff:
+        return redirect('shares:shares_dashboard')
+
+    if not hasattr(user, 'amor108_member'):
+        return render(request, 'shares/not_amor108_member.html')
+        
+    amor108_member = user.amor108_member
+    transactions = ShareTransaction.objects.filter(member=amor108_member).order_by('transaction_date')
     
-    # Serialize QuerySet to JSON
     transactions_json = serializers.serialize('json', transactions)
 
     context = {
-        'transactions': transactions, # Keep for table display
-        'transactions_json': transactions_json, # Pass JSON for Chart.js
+        'transactions': transactions,
+        'transactions_json': transactions_json,
         'user_type': user.user_type,
     }
     return render(request, 'shares/view_performance.html', context)
@@ -116,7 +139,6 @@ def declare_dividend(request):
         if form.is_valid():
             dividend = form.save(commit=False)
             
-            # Optionally, fetch default tax rate from ShareConfig if not provided in form
             if not dividend.tax_rate:
                 share_config = ShareConfig.objects.first()
                 if share_config:
@@ -124,7 +146,7 @@ def declare_dividend(request):
             
             dividend.save()
             messages.success(request, 'Dividend declared successfully!')
-            return redirect('shares:dividend_list') # Redirect to a list of dividends
+            return redirect('shares:dividend_list')
         else:
             messages.error(request, 'Error declaring dividend. Please check your input.')
     else:
@@ -158,43 +180,34 @@ def approve_dividend(request, dividend_id):
         messages.warning(request, 'This dividend has already been approved and distributed.')
         return redirect('shares:dividend_list')
     
-    # Mark dividend as approved
     dividend.is_approved = True
     dividend.save()
     
-    # Distribute dividends
-    shares = Share.objects.filter(units__gt=0) # Only consider members with shares
+    shares = Share.objects.filter(units__gt=0)
     
     total_distributed_amount = Decimal('0.00')
     total_tax_deducted = Decimal('0.00')
 
     for share in shares:
-        # Calculate dividend for each member
-        # Only shares held on or before the effective date are eligible
-        eligible_units = share.units # Assuming all units are eligible for simplicity for now
+        eligible_units = share.units
         
         gross_dividend = eligible_units * share.unit_price * dividend.dividend_rate
         tax_amount = gross_dividend * dividend.tax_rate
         net_dividend = gross_dividend - tax_amount
         
         if net_dividend > 0:
-            # Create a ShareTransaction record for the dividend
             ShareTransaction.objects.create(
                 member=share.member,
                 transaction_type='dividend',
-                units=0, # Dividends are not units
+                units=0,
                 unit_price=Decimal('0.00'),
                 total_amount=net_dividend,
                 description=f'Dividend distribution (Gross: {gross_dividend:.2f}, Tax: {tax_amount:.2f})',
                 reference_number=f"DIV{dividend.id}_{share.member.id}_{''.join(random.choices(string.digits, k=4))}",
-                dividend=dividend # Link to the specific dividend declaration
+                dividend=dividend
             )
             total_distributed_amount += net_dividend
             total_tax_deducted += tax_amount
-            
-            # Optionally, update member's balance or add to their share account
-            # For this implementation, we are just recording the transaction.
-            # Actual crediting to a bank account would involve another system/model.
             
     messages.success(request, f'Dividend declared on {dividend.declaration_date} has been approved and distributed.')
     messages.info(request, f'Total Net Dividend Distributed: KES {total_distributed_amount:.2f}. Total Tax Deducted: KES {total_tax_deducted:.2f}.')

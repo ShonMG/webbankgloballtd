@@ -2,10 +2,11 @@
 # Create your models here.
 from django.db import models
 from accounts.models import User
+from members_amor108.models import Member as Amor108Member # Import Amor108Member
 from decimal import Decimal
 
 class Share(models.Model):
-    member = models.OneToOneField(User, on_delete=models.CASCADE, related_name='share')
+    member = models.OneToOneField(Amor108Member, on_delete=models.CASCADE, related_name='share_account')
     units = models.IntegerField(default=0)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=100.00)
     total_value = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
@@ -35,7 +36,7 @@ class ShareTransaction(models.Model):
         ('bonus', 'Bonus Issue'),
     )
     
-    member = models.ForeignKey(User, on_delete=models.CASCADE, related_name='share_transactions')
+    member = models.ForeignKey(Amor108Member, on_delete=models.CASCADE, related_name='share_transactions')
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
     units = models.IntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)

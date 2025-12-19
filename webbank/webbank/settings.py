@@ -35,7 +35,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 if DEBUG:
     ALLOWED_HOSTS.append('webbankglobal.onrender.com')
     ALLOWED_HOSTS.append('0.0.0.0')
-    ALLOWED_HOSTS.extend(['localhost', '127.0.0.1'])
+    
 
 
 # Application definition
@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'widget_tweaks',
+
 
     # Custom apps
     'accounts',
@@ -71,6 +73,7 @@ INSTALLED_APPS = [
     'governance',
     'audit',
     'reports',
+
 ]
 
 MIDDLEWARE = [
@@ -168,4 +171,6 @@ AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = '/accounts/signin/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
-CSRF_TRUSTED_ORIGINS = ['https://webbankglobal.onrender.com/',]
+CSRF_TRUSTED_ORIGINS = [
+    'https://webbankglobal.onrender.com',
+]

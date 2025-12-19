@@ -61,4 +61,3 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD') # Use environment va
 
 BASE_URL = os.environ.get('BASE_URL', 'http://127.0.0.1:8000')
 
-CSRF_TRUSTED_ORIGINS = ["https://webbankglobal.onrender.com/",]

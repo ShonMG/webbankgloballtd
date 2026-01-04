@@ -1,7 +1,175 @@
 {% extends 'amor108/dashboard_base.html' %}
+{% load static %}
 
-{% block title %}Amor108 - Pools{% endblock %}
+{% block title %}Amor108 - My Pools{% endblock %}
+
+{% block dashboard_title %}
+    My Pools
+{% endblock %}
 
 {% block dashboard_content %}
-    {% include 'amor108/_pools.html' %}
+    <div class="row">
+        {# Current Pool Participation #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Your Current Pool</h6>
+                </div>
+                <div class="card-body">
+                    {% if member_pool %}
+                        <h5>{{ member_pool.name }} {% if member_pool.is_locked %}<span class="badge bg-danger">Locked</span>{% endif %}</h5>
+                        <p>{{ member_pool.description }}</p>
+                        <p><strong>Your Contribution:</strong> Ksh {{ member_pool.contribution_amount }} ({{ member_pool.get_contribution_frequency_display }})</p>
+                        <p><strong>Members:</strong> {{ member_pool.member_count }} / {{ member_pool.member_limit }}</p>
+                        {% if not member_pool.is_active %}
+                            <div class="alert alert-warning" role="alert">
+                                This pool is currently inactive.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p>You are not currently assigned to any pool.</p>
+                        <a href="{% url 'pools:pool_list' %}" class="btn btn-primary">Browse Available Pools</a>
+                    {% endif %}
+                    
+                    {# Downgrade Status Indicators #}
+                    {% if voting_rights_revoked or loan_visibility_reduced or reduced_credit_power %}
+                        <hr>
+                        <h6 class="text-danger">Downgrade Status:</h6>
+                        {% if voting_rights_revoked %}
+                            <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> Loss of Voting Rights</p>
+                        {% endif %}
+                        {% if loan_visibility_reduced %}
+                            <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> Reduced Loan Visibility</p>
+                        {% endif %}
+                        {% if reduced_credit_power %}
+                            <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> Reduced Credit Power</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Pool Upgrade Eligibility #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Upgrade Eligibility</h6>
+                </div>
+                <div class="card-body">
+                    {% if can_upgrade %}
+                        <p>You are eligible to upgrade to a higher tier pool!</p>
+                        {% if next_pool_requirements %}
+                            <div class="alert alert-info">
+                                <strong>Next Pool:</strong> {{ next_pool_requirements.name }}<br>
+                                <strong>Required Contribution:</strong> Ksh {{ next_pool_requirements.contribution_amount }}<br>
+                                <strong>Description:</strong> {{ next_pool_requirements.description }}
+                            </div>
+                            <form method="post" action="{% url 'pools:upgrade_pool' next_pool_requirements.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success">Upgrade Now</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <p>You are not currently eligible for an upgrade, or you are in the highest available pool.</p>
+                        {% if member_pool %}
+                             <p>Continue contributing to increase your eligibility!</p>
+                        {% endif %}
+                    {% endif %}
+                    {# Dynamic Admin notices (rule changes) #}
+                    {# TODO: Fetch actual Admin Notices from a model #}
+                    <div class="alert alert-info mt-3" role="alert">
+                        <strong>Admin Notice:</strong>
+                        <!-- Dynamic content for pool rules and eligibility criteria changes would go here. -->
+                        Currently, there are no specific admin notices regarding pool rules.
+                        Please check the <a href="{% url 'amor108:dashboard_transparency' %}">Transparency</a> section for general updates.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Pool Governance Resolutions #}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Pool Governance - Resolutions</h6>
+        </div>
+        <div class="card-body">
+            {% if resolutions %}
+                <div class="list-group">
+                    {% for resolution in resolutions %}
+                        <div class="list-group-item list-group-item-action flex-column align-items-start mb-3">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ resolution.title }}</h5>
+                                <small class="text-muted">{{ resolution.creation_date|date:"F d, Y" }}</small>
+                            </div>
+                            <p class="mb-1">{{ resolution.description }}</p>
+                            {% if resolution.votable_by_gold_only %}
+                                <small class="text-warning"><i class="fas fa-star"></i> Votable by Gold Tier Members Only</small>
+                            {% else %}
+                                <small class="text-info">Visible to All Members</small>
+                            {% endif %}
+                             {% if resolution.pool %}
+                                <small class="text-muted d-block mt-1">Specific to: {{ resolution.pool.name }}</small>
+                            {% endif %}
+
+                            <div class="mt-2">
+                                <strong>Votes:</strong> Yes ({{ resolution.yes_votes }}) / No ({{ resolution.no_votes }})
+                                {% if resolution.can_vote %}
+                                    {% if not resolution.user_has_voted %}
+                                        <form method="post" action="{% url 'pools:vote_resolution' resolution.pk %}" class="d-inline ms-3">
+                                            {% csrf_token %}
+                                            <button type="submit" name="vote_choice" value="yes" class="btn btn-success btn-sm">Vote Yes</button>
+                                            <button type="submit" name="vote_choice" value="no" class="btn btn-danger btn-sm">Vote No</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="badge bg-secondary ms-3">You have voted</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-warning ms-3">{{ resolution.can_vote_reason }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No new governance resolutions at this time.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {# List of All Pools #}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">All Available Pools</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for pool in all_pools %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 {% if pool.is_locked %}border-danger{% elif pool == member_pool %}border-success{% endif %}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ pool.name }} {% if pool.is_locked %}<span class="badge bg-danger">Full</span>{% endif %}</h5>
+                                <p class="card-text">{{ pool.description|truncatechars:100 }}</p>
+                                <ul class="list-group list-group-flush mb-3">
+                                    <li class="list-group-item"><strong>Contribution:</strong> Ksh {{ pool.contribution_amount }} ({{ pool.get_contribution_frequency_display }})</li>
+                                    <li class="list-group-item"><strong>Members:</strong> {{ pool.member_count }} / {{ pool.member_limit }}</li>
+                                </ul>
+                                {% if pool == member_pool %}
+                                    <button class="btn btn-success" disabled>Your Current Pool</button>
+                                {% elif pool.is_locked %}
+                                    <button class="btn btn-danger" disabled>Pool Full</button>
+                                {% else %}
+                                    <a href="{% url 'pools:pool_detail' pool.pk %}" class="btn btn-primary">View Details</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <p>No pools are currently available.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 {% endblock %}

@@ -343,11 +343,7 @@ h6 { font-size: 1rem; }
     color: white;
 }
 
-/* Remove conflicting duplicate .card style */
-/* The general .card rule at the top is sufficient */
-.card {
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* More pronounced shadow for modern feel */
-}
+
 
 /* Specific fixes for elements previously defined with less modern styles */
 .btn-dark {
@@ -558,4 +554,26 @@ h6 { font-size: 1rem; }
 }
 #services .card-title {
     color: var(--dark-color);
+}
+/* Feature cards specific styling */
+.feature-cards-row {
+    margin-bottom: 2rem; /* Add some space below the row */
+}
+
+.feature-cards-row .col-md-6 .card {
+    min-height: 280px; /* Ensure consistent height for visual balance */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.feature-cards-row .card-body {
+    flex-grow: 1; /* Allow card body to expand */
+}
+
+.feature-cards-row .card-body .d-grid {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Push buttons to the bottom */
 }

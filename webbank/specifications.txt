@@ -1,0 +1,60 @@
+Hello Shawn,
+
+I trust you are well. Apologies once again for the delayed follow-up.
+
+Further to our earlier feedback, we would like to clearly clarify the loan calculation logic, especially on interest rates and how the interest should be distributed for members and non-members.
+
+1. Non-Member Loan Calculation (20% Interest)
+
+For non-member loans, the total interest rate remains 20%, distributed as follows:
+
+2% – Webbank
+
+8% – Guarantor
+
+10% – Distributed among all members
+
+The loan calculator should clearly show:
+
+Total interest charged
+
+Exact amounts allocated to Webbank, guarantor, and members
+
+What the borrower pays in total
+
+In case of loan default, the guarantor should be able to see that they are responsible for:
+
+The defaulted loan amount plus the full 20% interest
+
+The system should also show that:
+
+The guarantor earns their 8% interest immediately upon loan disbursement
+
+This interest can either:
+
+Be credited as the guarantor’s shares, or
+
+Be withdrawn immediately via M-Pesa
+
+2. Member Loan Applications
+
+For members borrowing loans, interest should be calculated as follows:
+
+Short-term loans: 10% interest(one month)
+
+Long-term loans: 1% per month
+
+The calculator should:
+
+Automatically calculate interest based on loan type (short-term or long-term)
+
+Include a major calculator logic that distributes the earned interest among all members
+
+3. Landing Page Update
+
+Additionally, on the landing page, instead of displaying the number of people, we would like it to display the number of shares. --done
+
+Kindly confirm if the above logic can be implemented and share the expected timelines.
+
+
+Looking forward to your feedback.

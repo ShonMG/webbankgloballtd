@@ -21,18 +21,17 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
+                        {% if not user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'index' %}">WebBank Home</a>
+                            <a class="nav-link" href="{% url 'amor108:index' %}">Sign Up</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts_amor108:signup' %}">Sign Up</a>
+                            <a class="nav-link" href="{% url 'amor108:signin' %}">Login</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts_amor108:login' %}">Login</a>
-                        </li>
+                        {% endif %}
                         {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts_amor108:dashboard' %}">Dashboard</a>
+                            <a class="nav-link" href="{% url 'amor108:dashboard' %}">Dashboard</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'accounts_amor108:logout' %}">Logout</a>

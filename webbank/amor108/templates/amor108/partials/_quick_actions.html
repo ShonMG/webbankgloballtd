@@ -1,0 +1,10 @@
+<!-- Quick Action Buttons -->
+<div class="mb-4 d-flex justify-content-around flex-wrap">
+    <a href="{% url 'contributions:stk_push_initiate' %}" class="btn btn-primary m-2">Make Contribution</a>
+    <a href="{% url 'payments:payment_history' %}" class="btn btn-dark m-2">Payment History</a>
+    <a href="{% url 'profits:dashboard' %}" class="btn btn-info m-2">Profit History</a>
+    <a href="{% url 'amor108:loan_request' %}" class="btn btn-success m-2">Apply for Loan</a>
+    <a href="{% url 'profits:reinvest_profit' member.pk %}" class="btn btn-info m-2">Reinvest Profits</a>
+    <a href="#" class="btn btn-secondary m-2">Download Statement</a>
+    <a href="{% url 'messaging:new_conversation' %}" class="btn btn-warning m-2">Message Manager</a>
+</div>

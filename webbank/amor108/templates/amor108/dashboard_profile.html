@@ -1,0 +1,41 @@
+{% extends 'amor108/dashboard_base.html' %}
+
+{% block title %}Amor108 - Member Profile{% endblock %}
+
+{% block dashboard_title %}
+    Member Profile
+{% endblock %}
+
+{% block dashboard_content %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Your Personal and Membership Information</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Full Name:</strong> {{ member.user.get_full_name }}</p>
+                    <p><strong>Membership ID:</strong> {{ member.user.username }}</p>
+                    <p><strong>Phone Number:</strong> {{ member.user.phone_number }}</p>
+                    <p><strong>Email Address:</strong> {{ member.user.email }}</p>
+                    <p><strong>Nationality:</strong> {{ member.user.nationality }}</p>
+                    <p><strong>Identification No:</strong> {{ member.user.id_number }}</p>
+                    <p><strong>Passport No:</strong> {{ member.user.passport_no }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Date Joined:</strong> {{ member.date_joined_pool|date:"M d, Y" }}</p>
+                    <p><strong>Pool Assigned:</strong> {{ member.pool.name }}</p>
+                    <p><strong>Contribution Schedule:</strong> {{ member.pool.get_contribution_frequency_display }}</p>
+                    <p><strong>Contribution Amount:</strong> Ksh {{ member.pool.contribution_amount }}</p>
+                    <p><strong>Member Status:</strong> {{ member.status.name }}</p>
+                    {% if member.is_suspended %}
+                        <p class="text-danger"><strong>Account Status:</strong> Suspended</p>
+                        <p class="text-danger small"><strong>Reason:</strong> {{ member.suspension_reason }}</p>
+                    {% endif %}
+                    <p><strong>Share Ownership Details:</strong> {{ member.share_ownership_details }}</p>
+                </div>
+            </div>
+            <a href="#" class="btn btn-primary mt-3">Edit Profile</a>
+        </div>
+    </div>
+{% endblock %}

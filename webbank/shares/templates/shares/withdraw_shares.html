@@ -1,0 +1,12 @@
+{% extends 'base.html' %} {# Assuming a base template exists #}
+
+{% block title %}Withdraw Shares{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Withdraw Shares</h2>
+        <p>This is a placeholder page for withdrawing shares.</p>
+        <p>Implement a form here for users to specify the amount or number of units they wish to withdraw, along with validation logic.</p>
+        <a href="{% url 'amor108:dashboard_shares' %}" class="btn btn-secondary mt-3">Back to Shares Dashboard</a>
+    </div>
+{% endblock %}

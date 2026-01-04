@@ -7,13 +7,29 @@
 <div class="container-fluid py-4"> {# Added container-fluid for consistent padding #}
     <div class="context d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4"> {# Matches members.html context div #}
         <div class="shares-text"> {# Uses shares-text for consistent styling #}
-            <h2>Welcome, {{ user.get_full_name|default:user.username }}!</h2>
+            <h2>Welcome, {{ user.get_full_name|default:user.username }}! {% if is_webbank_member %}<span class="badge bg-success">WebBank Member</span>{% endif %}</h2>
             <p class="text-muted fs-4">({{ user.get_user_type_display }})</p> {# Moved smaller text here #}
         </div>
         <div class="shares-button mt-2 mt-sm-0">
             <a href="{% url 'loans:loans_dashboard' %}" class="btn btn-primary">Apply for Loan</a>
         </div>
     </div>
+
+    {% if is_eligible_for_webbank %}
+    <div class="row mt-4 animate__animated animate__fadeIn">
+        <div class="col-md-12">
+            <div class="card p-3 bg-light border-primary shadow-sm">
+                <div class="d-flex justify-content-between align-items-center flex-column flex-sm-row">
+                    <div class="text-center text-sm-start mb-3 mb-sm-0">
+                        <h3 class="text-primary fw-bold">Ready for the Next Level?</h3>
+                        <p class="mb-0 fs-5">As a GOLD member of AMOR108, you are eligible to join the exclusive WebBank SACCO.</p>
+                    </div>
+                    <a href="{% url 'webbankboard:apply_for_webbank' %}" class="btn btn-primary btn-lg">Apply for WebBank Membership</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <div class="row mt-4">
         <!-- Shares Overview -->

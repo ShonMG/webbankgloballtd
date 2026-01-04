@@ -69,6 +69,14 @@ class Loan(models.Model):
         blank=True,
         help_text="Select members who will guarantee this loan"
     )
+    sponsored_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sponsored_loans',
+        help_text="The WebBank member who is sponsoring this guest loan."
+    )
     
     def clean(self):
         super().clean()

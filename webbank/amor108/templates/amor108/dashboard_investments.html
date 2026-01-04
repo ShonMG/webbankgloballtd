@@ -2,6 +2,61 @@
 
 {% block title %}Amor108 - Investments{% endblock %}
 
+{% block dashboard_title %}
+    Your Investments
+{% endblock %}
+
 {% block dashboard_content %}
-    {% include 'amor108/_investments.html' %}
+    <div class="row">
+        {# Active Investments #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Active Investments</h6>
+                </div>
+                <div class="card-body">
+                    {% if active_investments %}
+                        <ul class="list-group">
+                            {% for investment in active_investments %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ investment.investment_type }}</strong><br>
+                                        Amount: Ksh {{ investment.amount }}
+                                    </div>
+                                    <span class="badge bg-success rounded-pill">{{ investment.get_status_display }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No active investments.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Investment History #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Investment History</h6>
+                </div>
+                <div class="card-body">
+                    {% if investment_history %}
+                        <ul class="list-group">
+                            {% for record in investment_history %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ record.investment_type }}</strong> (Ksh {{ record.amount }})<br>
+                                        Status: {{ record.get_status_display }} on {{ record.date|date:"M d, Y" }}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No investment history available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

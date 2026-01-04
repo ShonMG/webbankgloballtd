@@ -1,0 +1,12 @@
+{% extends 'base.html' %} {# Assuming a base template exists #}
+
+{% block title %}Buy Shares{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Buy Shares</h2>
+        <p>This is a placeholder page for buying shares.</p>
+        <p>Implement a form here for users to specify the amount or number of units they wish to purchase.</p>
+        <a href="{% url 'amor108:dashboard_shares' %}" class="btn btn-secondary mt-3">Back to Shares Dashboard</a>
+    </div>
+{% endblock %}

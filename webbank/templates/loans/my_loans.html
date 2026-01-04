@@ -11,7 +11,27 @@
             <p class="text-muted mb-0">Overview of all your loan applications and their statuses.</p>
         </div>
         <div class="col-md-3 text-end">
-            <a href="{% url 'loans:webbank_loan_request' %}" class="btn btn-primary">Apply for New Loan</a>
+            {% if is_webbank_member or is_amor108_member %}
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="loanActions" data-bs-toggle="dropdown" aria-expanded="false">
+                        Loan Actions
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="loanActions">
+                        {% if is_webbank_member %}
+                            <li><a class="dropdown-item" href="{% url 'loans:webbank_loan_request' %}">Apply for Loan</a></li>
+                            <li><a class="dropdown-item" href="{% url 'loans:webbank_loan_request' %}?guest=true">Sponsor Guest Borrower</a></li>
+                        {% elif is_amor108_member %}
+                            <li><a class="dropdown-item" href="{% url 'loans:webbank_loan_request' %}">Apply for Loan</a></li>
+                        {% endif %}
+                        
+                        {% if is_eligible_for_webbank %}
+                            <li><hr class="dropdown-divider"></li>
+                            {# This URL should point to a view that handles the WebBank membership application process #}
+                            <li><a class="dropdown-item" href="#">Become a WebBank Member</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endif %}
         </div>
     </div>
 
@@ -53,7 +73,7 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="7">No loans found.</td>
+                                <td colspan="7" class="text-center">No loans found. Why not <a href="{% url 'loans:webbank_loan_request' %}">apply for one</a>?</td>
                             </tr>
                             {% endfor %}
                         </tbody>

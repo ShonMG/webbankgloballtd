@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 
-class Pool(models.Model):
+class MembershipTier(models.Model):
     name = models.CharField(max_length=255)
     contribution_amount = models.DecimalField(max_digits=10, decimal_places=2)
     contribution_frequency = models.CharField(max_length=10, choices=[('daily', 'Daily'), ('monthly', 'Monthly')])

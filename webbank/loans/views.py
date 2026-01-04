@@ -9,23 +9,73 @@ from django.core.paginator import Paginator
 from django.db.models import Sum, Q
 from decimal import Decimal
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 from .models import Loan, LoanType, LoanRepayment
 from shares.models import Share
 from members_amor108.models import Member as Amor108Member
 from .forms import LoanApplicationForm, LoanRepaymentForm
+from webbankboard.models import WebBankMembership
 
 User = get_user_model()
 
 @login_required
 def loans_dashboard(request):
-    # This view redirects to my_loans, which is the comprehensive dashboard for logged-in users.
-    return redirect('loans:my_loans')
+    user = request.user
+    is_amor108_member = hasattr(user, 'amor108_member')
+    is_webbank_member = False
 
-def webbank_loan_request(request):
-    user = request.user if request.user.is_authenticated else None
+    # Consistent membership check using email
+    if is_amor108_member and WebBankMembership.objects.filter(user=user, status=WebBankMembership.StatusChoices.ACTIVE).exists():
+        is_webbank_member = True
+
+    user_loans_queryset = Loan.objects.none()
+    outstanding_loan_amount = Decimal('0.00')
+    total_shares = Decimal('0.00')
+
+    if is_amor108_member:
+        amor108_member_instance = user.amor108_member
+        amor108_loans = Loan.objects.filter(amor108_member=amor108_member_instance)
+        user_loans_queryset = user_loans_queryset | amor108_loans
+        try:
+            total_shares = amor108_member_instance.share_account.total_value
+        except (Share.DoesNotExist, AttributeError):
+            total_shares = Decimal('0.00')
+
+    if is_webbank_member:
+        webbank_loans = Loan.objects.filter(member=user)
+        user_loans_queryset = user_loans_queryset | webbank_loans
+
+    user_loans_queryset = user_loans_queryset.distinct().order_by('-application_date')
     
-    # The guarantor search logic that was missing from the view.
+    outstanding_loan_amount = user_loans_queryset.filter(
+        status__in=['active', 'disbursed']
+    ).aggregate(total=Sum('outstanding_principal'))['total'] or Decimal('0.00')
+    
+    available_credit = (total_shares * settings.LOAN_TO_SHARE_MULTIPLIER) - outstanding_loan_amount
+    available_credit = max(available_credit, Decimal('0.00'))
+
+    context = {
+        'loans': user_loans_queryset,
+        'outstanding_balance': outstanding_loan_amount,
+        'available_credit': available_credit,
+        'user_type': user.user_type,
+        'is_webbank_member': is_webbank_member,
+        'is_amor108_member': is_amor108_member,
+    }
+    return render(request, 'loans/loans.html', context)
+
+@login_required
+def webbank_loan_request(request):
+    is_guest_loan = request.GET.get('guest') == 'true'
+    form_user = None if is_guest_loan else request.user
+
+    # LAW 6: Guest loans must be sponsored by a WebBank member
+    if is_guest_loan:
+        if not WebBankMembership.objects.filter(user=request.user, status=WebBankMembership.StatusChoices.ACTIVE).exists():
+            messages.error(request, "You must be an active WebBank member to sponsor a guest loan.")
+            return redirect('loans:loans_dashboard')
+
     search_query = request.GET.get('guarantor_search', '')
     guarantors = None
     if search_query:
@@ -34,102 +84,83 @@ def webbank_loan_request(request):
             Q(user__email__icontains=search_query) |
             Q(user__first_name__icontains=search_query) |
             Q(user__last_name__icontains=search_query)
-        ).exclude(user=user).distinct() if user else Amor108Member.objects.filter(
-            Q(user__username__icontains=search_query) |
-            Q(user__email__icontains=search_query) |
-            Q(user__first_name__icontains=search_query) |
-            Q(user__last_name__icontains=search_query)
-        ).distinct()
+        ).exclude(user=request.user).distinct() if request.user.is_authenticated else Amor108Member.objects.none()
 
     paginator = Paginator(guarantors, 5) if guarantors else None
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number) if paginator else None
     
     if request.method == 'POST':
-        # Get selected guarantors from the form submission to re-populate the checkboxes
-        selected_guarantors = request.POST.getlist('guarantors')
-        form = LoanApplicationForm(request.POST, user=user)
+        form = LoanApplicationForm(request.POST, user=form_user, is_guest_loan=is_guest_loan)
         if form.is_valid():
             loan = form.save(commit=False)
-            loan.interest_rate = loan.loan_type.interest_rate
-            loan.approval_stage = 'pending_manager'
-            loan.status = 'pending'
+            loan.loan_id = f"WB-L{int(time.time())}{''.join(random.choices(string.digits, k=4))}"
+            loan.approval_deadline = timezone.now() + timezone.timedelta(days=7)
             
-            if user:
-                if hasattr(user, 'amor108_member'):
-                    loan.amor108_member = user.amor108_member
+            if form_user:
+                if hasattr(form_user, 'amor108_member'):
+                    loan.amor108_member = form_user.amor108_member
                 else:
-                    loan.member = user
-                
-                loan.loan_id = f"WB-L{int(time.time())}{''.join(random.choices(string.digits, k=4))}"
-                loan.approval_deadline = timezone.now() + timezone.timedelta(days=7)
-                loan.save()
-                form.save_m2m() # Save guarantors
-                messages.success(request, 'Your loan application has been submitted successfully!')
-                return redirect('loans:my_loans')
-            else: # Guest user
-                loan.loan_id = f"WB-GUEST-L{int(time.time())}"
-                loan.save()
-                # Guests can have guarantors selected, so save them.
-                form.save_m2m()
-                messages.success(request, 'Your loan application has been submitted successfully! We will contact you for further details.')
-                return redirect('home')
+                    loan.member = form_user
+            
+            if is_guest_loan and request.user.is_authenticated:
+                loan.sponsored_by = request.user
+            
+            loan.save()
+            form.save_m2m()
+            messages.success(request, 'Your loan application has been submitted successfully!')
+            return redirect('loans:my_loans')
     else:
-        form = LoanApplicationForm(user=user)
-        selected_guarantors = []
+        form = LoanApplicationForm(user=form_user, is_guest_loan=is_guest_loan)
 
     context = {
         'form': form,
+        'is_guest_loan': is_guest_loan,
         'guarantors': page_obj,
         'search_query': search_query,
-        'selected_guarantors': selected_guarantors,
     }
     return render(request, 'loans/webbank_loan_request.html', context)
 
 @login_required
 def my_loans(request):
     user = request.user
-    
-    # Determine which loans to fetch and what shares the user has
-    user_loans_queryset = Loan.objects.none()
-    outstanding_loan_amount = Decimal('0.00')
-    total_shares = Decimal('0.00')
+    is_amor108_member = hasattr(user, 'amor108_member')
+    is_webbank_member = False
+    is_eligible_for_webbank = False
 
-    if hasattr(user, 'amor108_member'):
+    if is_amor108_member:
         amor108_member_instance = user.amor108_member
-        user_loans_queryset = Loan.objects.filter(amor108_member=amor108_member_instance).order_by('-application_date')
-        try:
-            total_shares = amor108_member_instance.share_account.total_value
-        except Share.DoesNotExist:
-            total_shares = Decimal('0.00')
-        outstanding_loan_amount = user_loans_queryset.filter(status__in=['active', 'disbursed']).aggregate(total=Sum('outstanding_principal'))['total'] or Decimal('0.00')
-    else:
-        # Generic WebBank member has no shares, but can have loans
-        user_loans_queryset = Loan.objects.filter(member=user).order_by('-application_date')
-        outstanding_loan_amount = user_loans_queryset.filter(status__in=['active', 'disbursed']).aggregate(total=Sum('outstanding_principal'))['total'] or Decimal('0.00')
+        if WebBankMembership.objects.filter(user=user, status=WebBankMembership.StatusChoices.ACTIVE).exists():
+            is_webbank_member = True
+        elif (amor108_member_instance.pool and 
+              amor108_member_instance.pool.name.upper() == 'GOLD'):
+            is_eligible_for_webbank = True
 
-    available_credit = (total_shares * 3) - outstanding_loan_amount
-    available_credit = max(available_credit, Decimal('0.00'))
-
-    # The loan application form is handled by the `webbank_loan_request` view,
-    # so we no longer need the form handling logic here.
+    user_loans_queryset = Loan.objects.none()
+    if is_amor108_member:
+        user_loans_queryset = user_loans_queryset | Loan.objects.filter(amor108_member=user.amor108_member)
+    if is_webbank_member:
+        user_loans_queryset = user_loans_queryset | Loan.objects.filter(member=user)
+        
+    user_loans_queryset = user_loans_queryset.distinct().order_by('-application_date')
 
     context = {
-        'loans': user_loans_queryset,
-        'outstanding_balance': outstanding_loan_amount,
-        'available_credit': available_credit,
+        'user_loans': user_loans_queryset,
         'user_type': user.user_type,
+        'is_webbank_member': is_webbank_member,
+        'is_amor108_member': is_amor108_member,
+        'is_eligible_for_webbank': is_eligible_for_webbank,
     }
-    return render(request, 'loans/loans.html', context)
+    return render(request, 'loans/my_loans.html', context)
 
 @login_required
 def repay_loan(request, pk):
-    # This logic needs to find the loan regardless of member type
     try:
-        if hasattr(request.user, 'amor108_member'):
-            loan = get_object_or_404(Loan, pk=pk, amor108_member=request.user.amor108_member)
-        else:
-            loan = get_object_or_404(Loan, pk=pk, member=request.user)
+        loan = get_object_or_404(Loan, pk=pk)
+        # Security check: ensure the loan belongs to the user
+        if not (loan.amor108_member and loan.amor108_member.user == request.user) and not (loan.member == request.user):
+            messages.error(request, "Loan not found or you do not have permission to view it.")
+            return redirect('loans:my_loans')
     except Loan.DoesNotExist:
         messages.error(request, "Loan not found.")
         return redirect('loans:my_loans')
@@ -138,29 +169,20 @@ def repay_loan(request, pk):
         form = LoanRepaymentForm(request.POST)
         if form.is_valid():
             amount = form.cleaned_data['amount']
-            
             if amount > loan.outstanding_principal:
                 messages.error(request, "Repayment amount exceeds outstanding balance.")
                 return redirect('loans:repay_loan', pk=loan.pk)
 
-            messages.info(request, f"STK Push initiated for KES {amount} for loan {loan.loan_id}. Please approve the transaction on your phone.")
-
+            # Create repayment record
             LoanRepayment.objects.create(
                 loan=loan,
                 amount=amount,
-                due_date=timezone.now().date(),
-                status='paid',
+                status='paid', # Assuming direct payment for now
                 transaction_id=f"REPAY-{loan.loan_id}-{int(time.time())}"
             )
             
-            # Recalculate outstanding balance and check if completed
-            loan.save() # .save() will trigger balance calculation
-
-            if loan.outstanding_principal <= 0:
-                loan.status = 'completed'
-                loan.save()
-
-            messages.success(request, f"Successfully repaid KES {amount} for loan {loan.loan_id}.")
+            loan.save() # Trigger balance recalculation
+            messages.success(request, f"Successfully recorded payment of KES {amount} for loan {loan.loan_id}.")
             return redirect('loans:my_loans')
     else:
         form = LoanRepaymentForm(initial={'amount': loan.outstanding_principal})
@@ -168,6 +190,21 @@ def repay_loan(request, pk):
     context = {
         'loan': loan,
         'form': form,
-        'user_type': request.user.user_type,
     }
     return render(request, 'loans/repay_loan.html', context)
+
+@login_required
+def loan_repayment_schedule(request, loan_id):
+    loan = get_object_or_404(Loan, id=loan_id)
+    # Security check
+    if not (loan.amor108_member and loan.amor108_member.user == request.user) and not (loan.member == request.user):
+        messages.error(request, "You are not authorized to view this repayment schedule.")
+        return redirect('loans:my_loans')
+
+    repayments = loan.repayments.all().order_by('due_date')
+    
+    context = {
+        'loan': loan,
+        'repayments': repayments,
+    }
+    return render(request, 'loans/loan_repayment_schedule.html', context)

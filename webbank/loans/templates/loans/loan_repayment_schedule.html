@@ -1,0 +1,51 @@
+{% extends 'base.html' %} {# Assuming a base template exists #}
+
+{% block title %}Loan Repayment Schedule for {{ loan.loan_id }}{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Repayment Schedule for Loan {{ loan.loan_id }}</h2>
+        <p><strong>Loan Type:</strong> {{ loan.loan_type.name }}</p>
+        <p><strong>Amount Approved:</strong> Ksh {{ loan.amount_approved }}</p>
+        <p><strong>Interest Rate:</strong> {{ loan.interest_rate }}%</p>
+        <p><strong>Outstanding Principal:</strong> Ksh {{ loan.outstanding_principal }}</p>
+        <p><strong>Loan Status:</strong> <span class="badge bg-info">{{ loan.get_status_display }}</span></p>
+
+        <h3 class="mt-4">Full Repayment Schedule</h3>
+        {% if repayments %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Due Date</th>
+                            <th>Amount Due</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for repayment in repayments %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ repayment.due_date|date:"M d, Y" }}</td>
+                                <td>Ksh {{ repayment.amount }}</td>
+                                <td>
+                                    {% if repayment.status == 'paid' %}
+                                        <span class="badge bg-success">Paid</span>
+                                    {% elif repayment.status == 'overdue' %}
+                                        <span class="badge bg-danger">Overdue</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Due</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>No repayment schedule found for this loan.</p>
+        {% endif %}
+        <a href="{% url 'amor108:dashboard_loans' %}" class="btn btn-secondary mt-3">Back to Loans Dashboard</a>
+    </div>
+{% endblock %}

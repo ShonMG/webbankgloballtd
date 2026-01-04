@@ -3,22 +3,53 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
+from django.views.generic import TemplateView, View # Import TemplateView and View
+from django.contrib.auth.mixins import AccessMixin # Import AccessMixin
+from django.urls import reverse_lazy # Import reverse_lazy
+
 from .models import MemberProfit, ProfitCycle
 from members_amor108.models import Member as Amor108Member
 from shares.models import Share, ShareTransaction
+from accounts_amor108.models import Amor108Profile # Import Amor108Profile
+from .utils import get_profit_summary # Import the utility function
 from decimal import Decimal
 import random
 import string
 
-@login_required
-def member_profits_list(request):
-    member = get_object_or_404(Amor108Member, user=request.user)
-    member_profits = MemberProfit.objects.filter(member=member).order_by('-profit_cycle__end_date')
-    
-    context = {
-        'member_profits': member_profits
-    }
-    return render(request, 'profits/member_profits_list.html', context)
+# Define Amor108MemberRequiredMixin (copied from contributions.views for consistency)
+class Amor108MemberRequiredMixin(AccessMixin):
+    """Verify that the current user is an AMOR108 member or staff."""
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        
+        if request.user.is_staff:
+            return super().dispatch(request, *args, **kwargs)
+
+        if not hasattr(request.user, 'amor108_profile'):
+            messages.error(request, "You need to complete your Amor108 profile to access profit features.")
+            return redirect('accounts_amor108:profile_setup')
+        if not hasattr(request.user, 'amor108_member'):
+            messages.info(request, "You need a member record to access profit features.")
+            return redirect('pools:pool_dashboard') # Assuming user needs to be a member
+            
+        return super().dispatch(request, *args, **kwargs)
+
+class ProfitDashboardView(Amor108MemberRequiredMixin, TemplateView):
+    template_name = 'amor108/dashboard_profits.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        summary = get_profit_summary(user)
+        
+        context.update(summary) # Add all summary items to context
+        
+        # Add a form for withdrawal if needed, or link to withdrawal view
+        # Add a form for reinvestment if needed, or link to reinvestment view
+        
+        return context
 
 @login_required
 def withdraw_profit(request, pk):
@@ -26,7 +57,13 @@ def withdraw_profit(request, pk):
 
     if member_profit.action != 'PENDING':
         messages.warning(request, "This profit has already been actioned.")
-        return redirect('profits:member_profits_list')
+        return redirect('profits:dashboard') # Redirect to dashboard
+
+    # Check eligibility using get_profit_summary
+    summary = get_profit_summary(request.user)
+    if not summary['can_withdraw']:
+        messages.error(request, f"Cannot withdraw profits: {', '.join(summary['withdrawal_ineligibility_reasons'])}")
+        return redirect('profits:dashboard') # Redirect to dashboard
 
     if request.method == 'POST':
         with transaction.atomic():
@@ -37,7 +74,7 @@ def withdraw_profit(request, pk):
             # Here you would typically integrate with a payment gateway or internal transfer system
             # For now, we just mark it as withdrawn.
             messages.success(request, f"Successfully withdrew {member_profit.net_profit} from {member_profit.profit_cycle.name}.")
-            return redirect('profits:member_profits_list')
+            return redirect('profits:dashboard') # Redirect to dashboard
     
     context = {
         'member_profit': member_profit
@@ -50,50 +87,57 @@ def reinvest_profit(request, pk):
 
     if member_profit.action != 'PENDING':
         messages.warning(request, "This profit has already been actioned.")
-        return redirect('profits:member_profits_list')
+        return redirect('profits:dashboard') # Redirect to dashboard
+
+    # Check eligibility using get_profit_summary (can_reinvest is usually true if there are pending profits)
+    summary = get_profit_summary(request.user)
+    if summary['accrued_profits'] <= 0: # Should be caught by previous check, but good to double check
+        messages.error(request, "No pending profits to reinvest.")
+        return redirect('profits:dashboard') # Redirect to dashboard
 
     if request.method == 'POST':
         with transaction.atomic():
             # Get or create the member's share account
             share_account, created = Share.objects.get_or_create(member=member_profit.member)
             
-            # Calculate units to add (simplified: assume current unit price)
-            # In a real system, you might use the unit price at the time of reinvestment
-            current_unit_price = share_account.unit_price # Or from ShareConfig
-            
+            # Calculate units to add (simplified: assume current unit price from ShareConfig)
+            from shares.models import ShareConfig # Import ShareConfig here
+            share_config = ShareConfig.objects.first()
+            current_unit_price = share_config.current_unit_price if share_config else Decimal('100.00') # Default if no config
+
             if current_unit_price <= 0:
                 messages.error(request, "Cannot reinvest, share unit price is zero or negative.")
-                return redirect('profits:member_profits_list')
+                return redirect('profits:dashboard') # Redirect to dashboard
 
             units_to_add = (member_profit.net_profit / current_unit_price).quantize(Decimal('1'))
             
             if units_to_add < 1:
                 messages.warning(request, "Net profit is too low to purchase a full share unit for reinvestment.")
-                # Optionally, handle partial units or leave as pending
-                return redirect('profits:member_profits_list')
+                return redirect('profits:dashboard') # Redirect to dashboard
 
             # Update share account
             share_account.units += units_to_add
-            share_account.save() # This updates total_value automatically
+            share_account.save()
 
             # Create a ShareTransaction record for reinvestment
-            ShareTransaction.objects.create(
+            reinvestment_transaction = ShareTransaction.objects.create(
                 member=member_profit.member,
-                transaction_type='reinvestment', # Add 'reinvestment' to ShareTransaction.TRANSACTION_TYPES
+                transaction_type='reinvestment', # Use the new transaction type
                 units=units_to_add,
                 unit_price=current_unit_price,
                 total_amount=member_profit.net_profit,
                 description=f'Reinvestment of profit from {member_profit.profit_cycle.name}',
-                reference_number=f"REINV{member_profit.id}_{share_account.member.id}_{''.join(random.choices(string.digits, k=4))}"
+                reference_number=f"REINV{member_profit.id}_{share_account.member.id}_{''.join(random.choices(string.digits, k=4))}",
+                # dividend=None # Ensure dividend is not set for reinvestment
             )
 
             member_profit.action = 'REINVESTED'
             member_profit.action_date = timezone.now()
-            member_profit.reinvestment_transaction = share_account # Link to the share account that was updated
+            member_profit.reinvestment_transaction = reinvestment_transaction # Link to the ShareTransaction
             member_profit.save()
 
             messages.success(request, f"Successfully reinvested {member_profit.net_profit} into {units_to_add} shares.")
-            return redirect('profits:member_profits_list')
+            return redirect('profits:dashboard') # Redirect to dashboard
     
     context = {
         'member_profit': member_profit

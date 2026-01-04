@@ -2,6 +2,74 @@
 
 {% block title %}Amor108 - Exit & Withdrawal{% endblock %}
 
+{% block dashboard_title %}
+    Exit & Withdrawal
+{% endblock %}
+
 {% block dashboard_content %}
-    {% include 'amor108/_exit.html' %}
+    <div class="alert alert-warning" role="alert">
+        <strong>Important:</strong> Please read the exit and withdrawal requirements carefully before proceeding.
+    </div>
+
+    <div class="row">
+        {# Exit Requirements #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Exit Requirements</h6>
+                </div>
+                <div class="card-body">
+                    {% if has_active_loans %}
+                        <p class="text-danger"><i class="fas fa-times-circle"></i> You have outstanding loans that must be settled.</p>
+                    {% else %}
+                        <p class="text-success"><i class="fas fa-check-circle"></i> No outstanding loans.</p>
+                    {% endif %}
+
+                    {% if has_active_guarantees %}
+                        <p class="text-danger"><i class="fas fa-times-circle"></i> You have active guarantees that must be released.</p>
+                    {% else %}
+                        <p class="text-success"><i class="fas fa-check-circle"></i> No active guarantees.</p>
+                    {% endif %}
+                    
+                    <ul>
+                        <li>Minimum 30 days notice required for share withdrawal.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {# Withdrawal Options #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Withdrawal Options</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <h5 class="mb-1">Full Share Withdrawal</h5>
+                            <p class="mb-1">Withdraw all your shares (Ksh {{ current_share_value }}) and exit the Sacco.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Initiate Exit Request</h6>
+        </div>
+        <div class="card-body">
+            {% if can_exit %}
+                <p>If you meet all requirements, you can initiate your exit request here.</p>
+                <form method="post" action="{% url 'amor108:request_exit' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Request Exit from Amor108</button>
+                </form>
+            {% else %}
+                <p class="text-danger">You currently do not meet the requirements to initiate an exit request. Please review the requirements above.</p>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

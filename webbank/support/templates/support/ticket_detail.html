@@ -1,0 +1,36 @@
+{% extends 'amor108/dashboard_base.html' %}
+
+{% block title %}Ticket #{{ ticket.ticket_id }}{% endblock %}
+
+{% block dashboard_title %}
+    Ticket Details - #{{ ticket.ticket_id }}
+{% endblock %}
+
+{% block dashboard_content %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Ticket: {{ ticket.subject }}</h6>
+            <a href="{% url 'support:ticket_list' %}" class="btn btn-sm btn-info">Back to Tickets</a>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Ticket ID:</strong> {{ ticket.ticket_id }}</p>
+                    <p><strong>User:</strong> {{ ticket.user.username }}</p>
+                    <p><strong>Category:</strong> {{ ticket.get_category_display }}</p>
+                    <p><strong>Priority:</strong> <span class="badge badge-{% if ticket.priority == 'high' or ticket.priority == 'urgent' %}danger{% elif ticket.priority == 'medium' %}warning{% else %}info{% endif %}">{{ ticket.get_priority_display }}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Status:</strong> <span class="badge badge-{% if ticket.status == 'open' %}info{% elif ticket.status == 'in_progress' %}warning{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %}">{{ ticket.get_status_display }}</span></p>
+                    <p><strong>Created At:</strong> {{ ticket.created_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Last Updated:</strong> {{ ticket.updated_at|date:"M d, Y H:i" }}</p>
+                </div>
+            </div>
+            <hr>
+            <h5>Description:</h5>
+            <p>{{ ticket.description }}</p>
+
+            {# TODO: Add a section for replies/comments if applicable #}
+        </div>
+    </div>
+{% endblock %}

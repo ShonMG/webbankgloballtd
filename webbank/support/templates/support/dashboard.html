@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Support Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Support Dashboard</h1>
+    <p>Welcome to the support dashboard. Here you can view your tickets and access support resources.</p>
+    <ul>
+        <li><a href="{% url 'support:ticket_list' %}">View My Tickets</a></li>
+        <li><a href="{% url 'support:create_ticket' %}">Create New Ticket</a></li>
+    </ul>
+</div>
+{% endblock %}

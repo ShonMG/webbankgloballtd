@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.db.models import F # Import F object for atomic updates
 
 class Pool(models.Model):
     """
@@ -18,6 +19,15 @@ class Pool(models.Model):
     is_active = models.BooleanField(default=True)
     is_locked = models.BooleanField(default=False, help_text="Automatically locked when member limit is reached.")
     creation_date = models.DateTimeField(auto_now_add=True)
+    
+    # New fields for guarantees
+    allow_guarantees = models.BooleanField(default=False, help_text="Allows members of this pool to guarantee loans.")
+    guarantee_exposure_limit = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0.00,
+        help_text="Maximum total amount a member can guarantee."
+    )
     
     manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,

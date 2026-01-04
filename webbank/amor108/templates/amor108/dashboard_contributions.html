@@ -2,6 +2,97 @@
 
 {% block title %}Amor108 - Contributions{% endblock %}
 
+{% block dashboard_title %}
+    Contributions & Savings
+{% endblock %}
+
 {% block dashboard_content %}
-    {% include 'amor108/_contributions.html' %}
+    <div class="row">
+        {# Summary and Monthly Minimums #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Contribution Summary</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Total Contributions:</strong> Ksh {{ total_contributions }}</p>
+                    <p><strong>Expected Monthly Contribution:</strong> Ksh {{ expected_contribution_amount }} ({{ expected_contribution_frequency }})</p>
+                    
+                    {% if missed_late_contributions_count > 0 %}
+                        <div class="alert alert-warning" role="alert">
+                            You have {{ missed_late_contributions_count }} missed or late contributions. Please review your history.
+                        </div>
+                        <p class="text-danger">
+                            {% if not contribution_history_clean %}
+                                Your contribution history is not clean, which may affect your pool eligibility.
+                            {% endif %}
+                        </p>
+                    {% else %}
+                        <div class="alert alert-success" role="alert">
+                            Your contributions are up-to-date!
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# STK Push Initiation #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Make a Contribution</h6>
+                </div>
+                <div class="card-body">
+                    <p>Easily make your contributions using M-Pesa STK Push.</p>
+                    <form method="POST" action="{% url 'contributions:stk_push_initiate' %}"> {# Updated URL #}
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_amount" class="form-label">Amount</label>
+                            <input type="number" step="0.01" class="form-control" id="id_amount" name="amount" required value="{{ expected_contribution_amount }}"> {# Pre-fill with expected amount #}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Initiate STK Push</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Contribution History #}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Contribution History</h6>
+        </div>
+        <div class="card-body">
+            {% if all_contributions %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Transaction Code</th>
+                                <th>Payment Method</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contribution in all_contributions %}
+                                <tr>
+                                    <td>{{ contribution.date|date:"M d, Y" }}</td>
+                                    <td>{{ contribution.due_date|date:"M d, Y"|default:"N/A" }}</td>
+                                    <td>Ksh {{ contribution.amount }}</td>
+                                    <td>{{ contribution.transaction_code|default:"N/A" }}</td>
+                                    <td>{{ contribution.get_payment_method_display }}</td>
+                                    <td>{{ contribution.status.name }} {% if contribution.is_verified %}<span class="badge bg-success">Verified</span>{% else %}<span class="badge bg-warning">Unverified</span>{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No contribution history available.</p>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

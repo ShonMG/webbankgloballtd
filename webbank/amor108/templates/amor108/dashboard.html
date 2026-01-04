@@ -1,7 +1,59 @@
 {% extends 'amor108/dashboard_base.html' %}
 
-{% block title %}Amor108 - Member Profile{% endblock %}
+{% block title %}Amor108 - Member Dashboard{% endblock %}
+
+{% block dashboard_title %}
+    Dashboard Overview
+{% endblock %}
 
 {% block dashboard_content %}
-    {% include 'amor108/_profile.html' %}
+    {# Welcome Message #}
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Welcome, {{ user.get_full_name }}!</h5>
+            <p class="card-text">Here is a summary of your account. Use the sidebar to navigate to other sections.</p>
+        </div>
+    </div>
+
+    {# Summary Cards #}
+    {% include 'amor108/partials/_summary_cards.html' %}
+
+    {# Recent Activity & Quick Links #}
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                        <div class="list-group">
+                            {% for activity in recent_activities %}
+                                <a href="{{ activity.link|default:'#' }}" class="list-group-item list-group-item-action flex-column align-items-start">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ activity.category }}</h5>
+                                        <small>{{ activity.timestamp|date:"M d, Y" }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ activity.description }}</p>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No recent activity to display.</p>
+                    {% endif %}
+                    <a href="{% url 'amor108:dashboard_notifications' %}" class="btn btn-link p-0 mt-3">View All Activity &rarr;</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Links</h6>
+                </div>
+                <div class="card-body">
+                    {% include 'amor108/partials/_quick_actions.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

@@ -10,4 +10,6 @@ urlpatterns = [
     path('dividends/', views.dividend_list, name='dividend_list'),
     path('approve-dividend/<int:dividend_id>/', views.approve_dividend, name='approve_dividend'),
     path('performance/', views.view_performance, name='view_performance'),
+    path('buy/', views.buy_shares, name='buy_shares'),
+    path('withdraw/', views.withdraw_shares, name='withdraw_shares'),
 ]

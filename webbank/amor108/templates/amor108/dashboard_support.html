@@ -1,7 +1,87 @@
 {% extends 'amor108/dashboard_base.html' %}
 
-{% block title %}Amor108 - Support & Communication{% endblock %}
+{% block title %}Amor108 - Support{% endblock %}
+
+{% block dashboard_title %}
+    Support & Help Center
+{% endblock %}
 
 {% block dashboard_content %}
-    {% include 'amor108/_support.html' %}
+    <div class="alert alert-info" role="alert">
+        <strong>Support:</strong> Find answers to common questions or contact our support team.
+    </div>
+
+    <div class="row">
+        {# Support Tickets #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Your Support Tickets</h6>
+                </div>
+                <div class="card-body">
+                    {% if support_tickets %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="supportTicketsTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Ticket ID</th>
+                                        <th>Subject</th>
+                                        <th>Status</th>
+                                        <th>Last Update</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ticket in support_tickets %}
+                                    <tr>
+                                        <td>{{ ticket.ticket_id }}</td>
+                                        <td>{{ ticket.subject }}</td>
+                                        <td><span class="badge badge-{% if ticket.status == 'open' %}info{% elif ticket.status == 'in_progress' %}warning{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %}">{{ ticket.get_status_display }}</span></td>
+                                        <td>{{ ticket.updated_at|date:"Y-m-d H:i" }}</td>
+                                        <td><a href="{% url 'support:ticket_detail' ticket.pk %}" class="btn btn-sm btn-outline-primary">View</a></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <a href="{% url 'support:create_ticket' %}" class="btn btn-primary mt-3">Open New Ticket</a>
+                    {% else %}
+                        <p>You have no active support tickets.</p>
+                        <a href="{% url 'support:create_ticket' %}" class="btn btn-primary">Open New Ticket</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# FAQs #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Frequently Asked Questions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="faqAccordion">
+                        {% if faqs %}
+                            {% for faq in faqs %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="false" aria-controls="collapse{{ forloop.counter }}">
+                                            {{ faq.question }}
+                                        </button>
+                                    </h2>
+                                    <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#faqAccordion">
+                                        <div class="accordion-body">
+                                            {{ faq.answer }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No FAQs available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

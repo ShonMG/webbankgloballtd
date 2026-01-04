@@ -1,7 +1,112 @@
 {% extends 'amor108/dashboard_base.html' %}
 
-{% block title %}Amor108 - Voting & Governance{% endblock %}
+{% block title %}Amor108 - Governance & Voting{% endblock %}
+
+{% block dashboard_title %}
+    Governance & Voting
+{% endblock %}
 
 {% block dashboard_content %}
-    {% include 'amor108/_voting.html' %}
+    <div class="row">
+        {# Voting Power Summary #}
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Your Current Voting Power: <span class="badge bg-primary">{{ voting_power }}</span></h5>
+                    <p class="card-text text-muted">Your voting power is determined by your shares held and pool status.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {# Active Resolutions #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Active Resolutions</h6>
+                </div>
+                <div class="card-body">
+                    {% if active_resolutions %}
+                        <div class="list-group">
+                            {% for res in active_resolutions %}
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ res.title }}</h5>
+                                        <small class="text-muted">Deadline: {{ res.deadline|date:"M d, Y H:i" }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ res.description }}</p>
+                                    <small class="text-info">Type: {{ res.get_vote_type_display }} {% if res.votable_by_gold_only %}| Gold Tier Only{% endif %}</small><br>
+                                    <small class="text-muted">Votes: Yes ({{ res.yes_votes }}) / No ({{ res.no_votes }})</small>
+
+                                    <div class="mt-2">
+                                        {% if res.can_vote and not res.user_has_voted %}
+                                            <form method="post" action="{% url 'governance:vote_resolution' res.pk %}" class="d-inline me-2">
+                                                {% csrf_token %}
+                                                <button type="submit" name="vote_choice" value="yes" class="btn btn-sm btn-success">Vote Yes</button>
+                                            </form>
+                                            <form method="post" action="{% url 'governance:vote_resolution' res.pk %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" name="vote_choice" value="no" class="btn btn-sm btn-danger">Vote No</button>
+                                            </form>
+                                        {% elif res.user_has_voted %}
+                                            <span class="badge bg-secondary">You have already voted.</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">{{ res.can_vote_reason }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No active resolutions for voting at this time.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Voting History #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Voting History</h6>
+                </div>
+                <div class="card-body">
+                    {% if voting_history %}
+                        <div class="list-group">
+                            {% for res in voting_history %}
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">{{ res.title }}</h5>
+                                        <small class="text-muted">Closed: {{ res.deadline|date:"M d, Y H:i" }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ res.description }}</p>
+                                    <small class="text-info">Outcome: {{ res.outcome }}</small><br>
+                                    <small class="text-muted">Votes: Yes ({{ res.yes_votes }}) / No ({{ res.no_votes }})</small>
+                                    {% if res.user_vote %}
+                                        <p class="mt-1">Your Vote: <span class="badge bg-{% if res.user_vote.vote_choice %}success{% else %}danger{% endif %}">{{ res.user_vote.get_vote_choice_display }}</span></p>
+                                    {% else %}
+                                        <p class="mt-1"><span class="badge bg-secondary">You did not vote.</span></p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No past voting records.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {# Resolutions and Governance Documents (Placeholders) #}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Governance Documents</h6>
+        </div>
+        <div class="card-body">
+            <p>Formal resolutions and important governance documents will be accessible here.</p>
+            <a href="{% url 'amor108:dashboard_documents' %}" class="btn btn-info">View All Documents</a>
+        </div>
+    </div>
 {% endblock %}

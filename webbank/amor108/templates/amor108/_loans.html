@@ -22,7 +22,7 @@
                         <td>{{ loan.get_loan_type_display }}</td>
                         <td>Ksh {{ loan.amount }}</td>
                         <td>{{ loan.interest_rate }}%</td>
-                        <td>Ksh {{ loan.amount }}</td> {# Placeholder for outstanding balance #}
+                        <td>Ksh {{ loan.outstanding_balance }}</td> {# Dynamic outstanding balance #}
                         <td>{{ loan.get_status_display }}</td>
                     </tr>
                     {% empty %}

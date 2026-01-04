@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
-from amor108.models import Pool # Assuming Pool model is defined in amor108 app
+from pools.models import Pool # Corrected import path
 
 class MembershipStatus(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -15,7 +15,7 @@ class MembershipStatus(models.Model):
 
 class Member(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='amor108_member')
-    pool = models.ForeignKey('amor108.Pool', on_delete=models.SET_NULL, null=True, blank=True)
+    pool = models.ForeignKey(Pool, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.ForeignKey(MembershipStatus, on_delete=models.SET_NULL, null=True, blank=True)
     date_joined_pool = models.DateField(auto_now_add=True)
     is_suspended = models.BooleanField(default=False)

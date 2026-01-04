@@ -70,6 +70,30 @@
         </div> {# Close card-body #}
     </div>
 
+    <!-- Membership Status -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h6 class="fw-bold mb-3"><i class='bx bx-group fs-2'></i> Membership Status</h6>
+            {% if is_amor108_member %}
+                <p class="mb-2 d-flex align-items-center"><strong class="me-2">AMOR108 Member:</strong> <span class="badge bg-success">Yes</span></p>
+                
+                {% if is_webbank_member %}
+                    <p class="mb-2 d-flex align-items-center"><strong class="me-2">WebBank Member:</strong> <span class="badge bg-primary">Yes</span></p>
+                {% else %}
+                    <p class="mb-2 d-flex align-items-center"><strong class="me-2">WebBank Member:</strong> <span class="badge bg-secondary">No</span></p>
+                {% endif %}
+
+                {% if amor108_pool %}
+                    <p class="mb-0 d-flex align-items-center"><strong class="me-2">AMOR108 Pool:</strong> <span class="badge" style="background-color: #{{ amor108_pool.name|slice:'0:6' }};">{{ amor108_pool.name }}</span></p>
+                {% else %}
+                    <p class="mb-0 d-flex align-items-center"><strong class="me-2">AMOR108 Pool:</strong> <span class="text-muted">Not assigned</span></p>
+                {% endif %}
+            {% else %}
+                <p>You are not currently a member of any SACCO.</p>
+            {% endif %}
+        </div>
+    </div>
+
     <!-- Stats Cards -->
     <div class="row g-3 mb-4"> {# Consistent row and margin #}
         <div class="col-xl-3 col-md-6 mb-4"> {# Consistent col sizing #}

@@ -1,4 +1,3 @@
-
 # Create your models here.
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -39,7 +38,7 @@ class User(AbstractUser):
         ('only_me', 'Only Me'),
     ]
     profile_visibility = models.CharField(max_length=10, choices=PROFILE_VISIBILITY_CHOICES, default='private')
-    two_factor_enabled = models.BooleanField(default=False) # Placeholder, not actively implemented yet
+    two_factor_enabled = models.BooleanField(default=False) # Controls user preference for 2FA; full 2FA enforcement logic to be implemented separately.
     email_notifications = models.BooleanField(default=True)
     sms_notifications = models.BooleanField(default=False)
     loan_status_notifications = models.BooleanField(default=True)
@@ -72,3 +71,13 @@ class User(AbstractUser):
     
     def __str__(self):
         return f"{self.username} ({self.get_user_type_display()})"
+
+class Testimonial(models.Model):
+    member = models.ForeignKey(User, on_delete=models.CASCADE, related_name='testimonials')
+    quote = models.TextField()
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Testimonial by {self.member.get_full_name() or self.member.username}"

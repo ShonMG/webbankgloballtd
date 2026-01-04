@@ -8,6 +8,7 @@ class Guarantee(models.Model):
         ('active', 'Active'),
         ('released', 'Released'),
         ('called', 'Called'),
+        ('rejected', 'Rejected'),
     )
     
     guarantor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='guarantees_given')

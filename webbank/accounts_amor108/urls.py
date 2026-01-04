@@ -12,6 +12,7 @@ urlpatterns = [
     path('dashboard/', views.amor108_dashboard, name='dashboard'),
     path('admin-panel/', views.amor108_admin_panel, name='admin_panel'),
     path('loan-option/', views.amor108_loan_option, name='amor108_loan_option'),
+    path('profile-setup/', views.profile_setup_view, name='profile_setup'), # New URL for profile setup
 
 
     # Password reset views

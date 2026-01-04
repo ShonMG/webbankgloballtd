@@ -7,9 +7,11 @@ import time
 import random
 import string
 from django.core.mail import send_mail # Import send_mail
-from .models import User
+from .models import User, Testimonial # Import Testimonial
 from .forms import LoginForm, SignUpForm, ProfileUpdateForm, UserSettingsForm
 from loans.models import Loan
+from members.models import Member as WebBankMember
+from shares.models import Share # Import the Share model
 
 # Default email for the webbank
 DEFAULT_FROM_EMAIL = 'theibankdollars@gmail.com'
@@ -18,10 +20,18 @@ def index(request):
     if request.user.is_authenticated:
         return redirect('dashboard:main_dashboard')
 
+    # Calculate total shares instead of total members
+    total_shares_count = Share.objects.aggregate(total_units=Sum('units'))['total_units'] or 0
+    total_loan_payouts = Loan.objects.filter(status='disbursed').aggregate(total=Sum('amount_approved'))['total'] or 0
+
+    # Fetch approved testimonials
+    testimonials = Testimonial.objects.filter(is_approved=True).select_related('member')[:2] # Limit to 2 for carousel
+
     context = {
-        'total_members': User.objects.filter(user_type='member').count(),
-        'total_loan_payouts': Loan.objects.filter(status='disbursed').aggregate(total=Sum('amount_approved'))['total'] or 0,
-        'years_active': 5 # Static for now
+        'total_shares': total_shares_count,
+        'total_loan_payouts': total_loan_payouts,
+        'years_active': 5, # Static for now
+        'testimonials': testimonials, # Pass testimonials to context
     }
     return render(request, 'index.html', context)
 
@@ -30,7 +40,11 @@ def signin(request):
         return redirect('dashboard:main_dashboard')
     
     if request.method == 'POST':
-        form = LoginForm(request.POST)
+        form = LoginForm(data=request.POST)
+        print("--- DEBUG: In accounts signin POST request, before form.is_valid() ---") # Temporary debug print
+        print("--- DEBUG: request.POST:", request.POST)
+        print("--- DEBUG: form.data:", form.data)
+        print("--- DEBUG: form.is_bound:", form.is_bound)
         if form.is_valid():
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
@@ -43,13 +57,11 @@ def signin(request):
                     messages.success(request, f'Welcome back, {user.first_name}!')
                     
                     # Check if the user has an Amor108Profile
-                    if hasattr(user, 'amor108profile'):
+                    if hasattr(user, 'amor108_profile'):
                         if user.amor108profile.is_approved:
                             return redirect('amor108:dashboard')
                         else:
-                            return render(request, 'amor108/pending_approval.html', {
-                                'message': 'Your account is awaiting approval from the admin.'
-                            })
+                            return redirect('amor108:pending_approval')
                     
                     # Default redirect for non-Amor108 members or if amor108profile doesn't exist
                     return redirect('dashboard:main_dashboard')
@@ -57,6 +69,10 @@ def signin(request):
                     messages.error(request, 'Invalid password.')
             except User.DoesNotExist:
                 messages.error(request, 'No account found with this email.')
+        else: # Form is not valid
+            print("Form errors (field-specific):", form.errors) # Debugging output to console
+            print("Form errors (non-field):", form.non_field_errors()) # Debugging output for non-field errors
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = LoginForm()
     
@@ -113,6 +129,16 @@ def logout_view(request):
 def profile(request):
     user = request.user
     
+    is_amor108_member = hasattr(user, 'amor108_member')
+    is_webbank_member = False
+    amor108_pool = None
+    
+    if is_amor108_member:
+        amor108_member_instance = user.amor108_member
+        amor108_pool = amor108_member_instance.pool
+        if WebBankMember.objects.filter(email=user.email, status='ACTIVE').exists():
+            is_webbank_member = True
+
     if request.method == 'POST':
         form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
@@ -122,7 +148,29 @@ def profile(request):
     else:
         form = ProfileUpdateForm(instance=user)
     
-    return render(request, 'accounts/profile.html', {'form': form})
+    # Correctly calculate stats for the profile page
+    total_shares = 0
+    if is_amor108_member:
+        try:
+            total_shares = user.amor108_member.share_account.total_value
+        except Exception:
+            total_shares = 0
+
+    loans = Loan.objects.filter(member=user) | Loan.objects.filter(amor108_member__user=user)
+    active_loans_count = loans.filter(status__in=['active', 'disbursed']).count()
+    outstanding_loan_amount = loans.filter(status__in=['active', 'disbursed']).aggregate(total=Sum('outstanding_principal'))['total'] or 0
+
+    context = {
+        'form': form,
+        'is_amor108_member': is_amor108_member,
+        'is_webbank_member': is_webbank_member,
+        'amor108_pool': amor108_pool,
+        'total_shares_value': total_shares,
+        'active_loans_count': active_loans_count,
+        'outstanding_loan_amount': outstanding_loan_amount,
+    }
+    
+    return render(request, 'accounts/profile.html', context)
 
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash

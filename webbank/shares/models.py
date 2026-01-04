@@ -1,9 +1,9 @@
-
-# Create your models here.
 from django.db import models
 from accounts.models import User
-from members_amor108.models import Member as Amor108Member # Import Amor108Member
+from members_amor108.models import Member as Amor108Member
 from decimal import Decimal
+from guarantees.models import Guarantee
+from django.core.validators import MinValueValidator
 
 class Share(models.Model):
     member = models.OneToOneField(Amor108Member, on_delete=models.CASCADE, related_name='share_account')
@@ -16,7 +16,8 @@ class Share(models.Model):
         default=0.00,
         null=True,
         blank=True,
-        help_text="Target amount for monthly share contributions."
+        help_text="Target amount for monthly share contributions.",
+        validators=[MinValueValidator(Decimal('0.01'))] # Ensure target is a positive value
     )
     
     def save(self, *args, **kwargs):
@@ -27,13 +28,23 @@ class Share(models.Model):
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f"{self.member.username} - {self.units} units"
+        return f"{self.member.user.username} - {self.units} units"
+
+class ShareLock(models.Model):
+    share_account = models.ForeignKey(Share, on_delete=models.CASCADE, related_name='locks')
+    guarantee = models.OneToOneField(Guarantee, on_delete=models.CASCADE, related_name='share_lock')
+    locked_units = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.locked_units} units of {self.share_account.member.user.username} locked for guarantee {self.guarantee.id}"
 
 class ShareTransaction(models.Model):
     TRANSACTION_TYPES = (
         ('purchase', 'Share Purchase'),
         ('dividend', 'Dividend Payment'),
         ('bonus', 'Bonus Issue'),
+        ('reinvestment', 'Profit Reinvestment'), # New transaction type
     )
     
     member = models.ForeignKey(Amor108Member, on_delete=models.CASCADE, related_name='share_transactions')
@@ -47,7 +58,7 @@ class ShareTransaction(models.Model):
     dividend = models.ForeignKey('Dividend', on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')
     
     def __str__(self):
-        return f"{self.transaction_type} - {self.member.username}"
+        return f"{self.transaction_type} - {self.member.user.username}"
 
 class ShareConfig(models.Model):
     current_unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=100.00)

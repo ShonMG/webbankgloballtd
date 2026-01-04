@@ -1,12 +1,12 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.db import transaction # Import transaction for atomicity
 from django.forms import DateInput, RadioSelect
 
 from .models import Amor108Profile, Role
 from members_amor108.models import Member, MembershipStatus # Import new models
-from amor108.models import Pool # Import Pool model to use in form field
+from pools.models import Pool # Import Pool model to use in form field
 
 User = get_user_model()
 
@@ -119,17 +119,89 @@ class Amor108RegistrationForm(UserCreationForm):
         return user
 
 class Amor108AuthenticationForm(AuthenticationForm):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'autofocus': True}))
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({
+        # Remove the default username field
+        if 'username' in self.fields: # Ensure 'username' exists before deleting
+            del self.fields['username']
+
+        self.fields['email'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': 'Username'
+            'placeholder': 'Email address'
         })
         self.fields['password'].widget.attrs.update({
             'class': 'form-control',
             'placeholder': 'Password'
         })
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        email = cleaned_data.get('email')
+        password = cleaned_data.get('password')
+
+        print(f"--- DEBUG: Amor108AuthenticationForm clean() - email: {email}, password: {'*' * len(password) if password else 'None'} ---")
+
+        if email and password:
+            self.user_cache = authenticate(self.request, username=email, password=password) # self.request is set by AuthenticationForm's __init__
+            if self.user_cache is None:
+                print("--- DEBUG: Authentication failed in Amor108AuthenticationForm custom clean() ---")
+                raise forms.ValidationError(
+                    self.error_messages['invalid_login'],
+                    code='invalid_login',
+                )
+        return cleaned_data
+
+class Amor108ProfileUpdateForm(forms.ModelForm):
+    # User model fields
+    first_name = forms.CharField(max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name = forms.CharField(max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    date_of_birth = forms.DateField(required=False, widget=DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    residential_area = forms.CharField(max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    phone_number = forms.CharField(max_length=15, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    profile_picture = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    nationality = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    id_number = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    passport_no = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+    # Member model fields (next of kin)
+    next_of_kin_names = forms.CharField(max_length=255, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    next_of_kin_mobile_no = forms.CharField(max_length=15, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    next_of_kin_email_address = forms.EmailField(required=False, widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    next_of_kin_identification_passport_no = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    next_of_kin_nationality = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     class Meta:
         model = User
-        fields = ['username', 'password']
+        fields = [
+            'first_name', 'last_name', 'email', 'date_of_birth', 'residential_area',
+            'phone_number', 'profile_picture', 'nationality', 'id_number', 'passport_no'
+        ]
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None) # Pop request as it's not needed by ModelForm init
+        super().__init__(*args, **kwargs)
+        
+        # Populate initial data from the associated Member instance
+        if self.instance and hasattr(self.instance, 'amor108_member'):
+            member_instance = self.instance.amor108_member
+            self.fields['next_of_kin_names'].initial = member_instance.next_of_kin_names
+            self.fields['next_of_kin_mobile_no'].initial = member_instance.next_of_kin_mobile_no
+            self.fields['next_of_kin_email_address'].initial = member_instance.next_of_kin_email_address
+            self.fields['next_of_kin_identification_passport_no'].initial = member_instance.next_of_kin_identification_passport_no
+            self.fields['next_of_kin_nationality'].initial = member_instance.next_of_kin_nationality
+            
+    def save(self, commit=True):
+        user = super().save(commit=True) # Save User model fields
+        if hasattr(user, 'amor108_member'):
+            member_instance = user.amor108_member
+            member_instance.next_of_kin_names = self.cleaned_data['next_of_kin_names']
+            member_instance.next_of_kin_mobile_no = self.cleaned_data['next_of_kin_mobile_no']
+            member_instance.next_of_kin_email_address = self.cleaned_data['next_of_kin_email_address']
+            member_instance.next_of_kin_identification_passport_no = self.cleaned_data['next_of_kin_identification_passport_no']
+            member_instance.next_of_kin_nationality = self.cleaned_data['next_of_kin_nationality']
+            member_instance.save() # Save Member model fields
+        return user

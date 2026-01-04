@@ -2,6 +2,62 @@
 
 {% block title %}Amor108 - Security & Settings{% endblock %}
 
+{% block dashboard_title %}
+    Security & Settings
+{% endblock %}
+
 {% block dashboard_content %}
-    {% include 'amor108/_security.html' %}
+    <div class="alert alert-info" role="alert">
+        <strong>Security & Settings:</strong> Manage your account security and personal settings here.
+    </div>
+
+    <div class="row">
+        {# Security Settings #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Security Settings</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Two-Factor Authentication:</strong> 
+                        {% if security_settings.two_factor_auth_enabled %}
+                            <span class="badge bg-success">Enabled</span>
+                            {# TODO: Implement backend logic for disabling 2FA #}
+                            <button class="btn btn-sm btn-outline-danger ms-2" disabled>Disable</button>
+                        {% else %}
+                            <span class="badge bg-danger">Disabled</span>
+                            {# TODO: Implement backend logic for enabling 2FA #}
+                            <button class="btn btn-sm btn-outline-success ms-2" disabled>Enable</button>
+                        {% endif %}
+                    </p>
+                    <p><strong>Last Password Change:</strong> {{ security_settings.last_password_change|date:"M d, Y" }} <a href="{% url 'accounts:password_change' %}" class="btn btn-sm btn-link">Change Password</a></p>
+                    <p><strong>Email:</strong> {{ user.email }}</p> {# Removed 'Change Email' link as no backend view exists yet #}
+                    <p><strong>Phone Number:</strong> {{ member.user.phone_number }}</p> {# Removed 'Change Phone' link as no backend view exists yet #}
+                </div>
+            </div>
+        </div>
+
+        {# Recent Logins #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Account Activity</h6>
+                </div>
+                <div class="card-body">
+                    {% if security_settings.recent_logins %}
+                        <ul class="list-group">
+                            {% for login_attempt in security_settings.recent_logins %}
+                                <li class="list-group-item">
+                                    <small class="text-muted">{{ login_attempt.timestamp|date:"M d, Y H:i" }}</small><br>
+                                    Logged in (Action: {{ login_attempt.get_action_display }})
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No recent login activity to display.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

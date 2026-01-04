@@ -6,12 +6,13 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm # Add this import
+from django.contrib import messages # Import messages for user feedback
 
 from .decorators import admin_required, pool_manager_required # Keep decorators for sample view
 
-from .forms import Amor108AuthenticationForm, Amor108RegistrationForm # Updated form class
+from .forms import Amor108AuthenticationForm, Amor108RegistrationForm, Amor108ProfileUpdateForm # Updated form class
 from .models import LoginHistory
-from amor108.models import Pool # Import the Pool model
+from pools.models import Pool # Import the Pool model
 
 class Amor108SignUpView(CreateView):
     form_class = Amor108RegistrationForm # Use the new form
@@ -60,6 +61,30 @@ class Amor108LoginView(LoginView): # Revert to Django's default LoginView
 def amor108_logout_view(request):
     logout(request)
     return redirect(reverse_lazy('accounts_amor108:login')) # Redirect to login page after logout
+
+# Profile setup view
+@login_required
+def profile_setup_view(request):
+    user = request.user
+    
+    # Ensure the user has an Amor108Member instance
+    if not hasattr(user, 'amor108_member'):
+        messages.error(request, "Your Amor108 profile is not fully set up. Please contact support.")
+        return redirect('amor108:index') # Or a more appropriate redirect
+
+    if request.method == 'POST':
+        form = Amor108ProfileUpdateForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('amor108:dashboard') # Redirect to Amor108 dashboard after setup
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = Amor108ProfileUpdateForm(instance=user)
+    
+    return render(request, 'accounts_amor108/profile_setup.html', {'form': form})
+
 
 # You might also want to create a dashboard view or profile view for Amor108 users
 @login_required

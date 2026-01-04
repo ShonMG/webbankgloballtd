@@ -35,39 +35,39 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Animate cards on scroll using Intersection Observer
-    const cards = document.querySelectorAll('.card');
-    if (cards.length > 0) {
-        const observerOptions = {
-            root: null, // viewport
-            rootMargin: '0px',
-            threshold: 0.1 // 10% of card visible triggers animation
-        };
+    // const cards = document.querySelectorAll('.card');
+    // if (cards.length > 0) {
+    //     const observerOptions = {
+    //         root: null, // viewport
+    //         rootMargin: '0px',
+    //         threshold: 0.1 // 10% of card visible triggers animation
+    //     };
 
-        const cardObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // Check if the card already has animation classes to avoid re-animating
-                    if (!entry.target.classList.contains('animate__animated')) {
-                        // Apply animation classes
-                        entry.target.classList.add('animate__animated', 'animate__fadeInUp');
-                        // Add delay if defined, otherwise animate immediately
-                        const delay = entry.target.dataset.animationDelay;
-                        if (delay) {
-                            entry.target.style.animationDelay = delay;
-                        }
-                    }
-                    observer.unobserve(entry.target); // Stop observing once animated
-                }
-            });
-        }, observerOptions);
+    //     const cardObserver = new IntersectionObserver((entries, observer) => {
+    //         entries.forEach(entry => {
+    //             if (entry.isIntersecting) {
+    //                 // Check if the card already has animation classes to avoid re-animating
+    //                 if (!entry.target.classList.contains('animate__animated')) {
+    //                     // Apply animation classes
+    //                     entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+    //                     // Add delay if defined, otherwise animate immediately
+    //                     const delay = entry.target.dataset.animationDelay;
+    //                     if (delay) {
+    //                         entry.target.style.animationDelay = delay;
+    //                     }
+    //                 }
+    //                 observer.unobserve(entry.target); // Stop observing once animated
+    //             }
+    //         });
+    //     }, observerOptions);
 
-        cards.forEach(card => {
-            // Check if card already has animation classes, if so, just observe (useful for cards loaded with delays already)
-            if (!card.classList.contains('animate__animated')) {
-                cardObserver.observe(card);
-            }
-        });
-    } // CLOSING BRACE ADDED HERE
+    //     cards.forEach(card => {
+    //         // Check if card already has animation classes, if so, just observe (useful for cards loaded with delays already)
+    //         if (!card.classList.contains('animate__animated')) {
+    //             cardObserver.observe(card);
+    //         }
+    //     });
+    // }
     
     // Script from shares.html for calculating total amount in Share Purchase Modal
     const unitsInput = document.querySelector('#id_units');

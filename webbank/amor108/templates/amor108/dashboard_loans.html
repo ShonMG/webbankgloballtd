@@ -2,6 +2,118 @@
 
 {% block title %}Amor108 - Loans{% endblock %}
 
+{% block dashboard_title %}
+    Loans Overview
+{% endblock %}
+
 {% block dashboard_content %}
-    {% include 'amor108/_loans.html' %}
+    {# Active Loans #}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Your Active Loans</h6>
+        </div>
+        <div class="card-body">
+            {% if active_loans %}
+                {% for loan in active_loans %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ loan.loan_type.name }} (ID: {{ loan.loan_id }})</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Amount Approved:</strong> Ksh {{ loan.amount_approved }}</p>
+                                    <p><strong>Monthly Payment:</strong> Ksh {{ loan.monthly_payment }}</p>
+                                    <p><strong>Outstanding Principal:</strong> Ksh {{ loan.outstanding_principal }}</p>
+                                    <p><strong>Loan Status:</strong> <span class="badge bg-success">{{ loan.get_status_display }}</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Next Repayment Date:</strong> {{ loan.next_repayment_date|date:"M d, Y" }}</p>
+                                    <p><strong>Application Date:</strong> {{ loan.application_date|date:"M d, Y" }}</p>
+                                    <p><strong>Disbursement Date:</strong> {{ loan.disbursement_date|date:"M d, Y" }}</p>
+                                    <p><strong>Term:</strong> {{ loan.term_months }} months</p>
+                                </div>
+                            </div>
+                            <h6 class="mt-3">Repayment Schedule:</h6>
+                            {% if loan.repayments.all %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Due Date</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for repayment in loan.repayments.all|slice:":5" %} {# Show first 5 for brevity #}
+                                                <tr>
+                                                    <td>{{ repayment.due_date|date:"M d, Y" }}</td>
+                                                    <td>Ksh {{ repayment.amount }}</td>
+                                                    <td>
+                                                        {% if repayment.status == 'paid' %}
+                                                            <span class="badge bg-success">Paid</span>
+                                                        {% elif repayment.status == 'overdue' %}
+                                                            <span class="badge bg-danger">Overdue</span>
+                                                        {% else %}
+                                                            <span class="badge bg-warning">Due</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% if loan.repayments.count > 5 %}
+                                    <p><a href="{% url 'loans:loan_repayment_schedule' loan.id %}">View Full Repayment Schedule &rarr;</a></p>
+                                {% endif %}
+                            {% else %}
+                                <p>No repayment schedule available yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>You currently have no active loans.</p>
+                <a href="{% url 'amor108:loan_request' %}" class="btn btn-primary">Apply for a Loan</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Loan History #}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Your Loan History</h6>
+        </div>
+        <div class="card-body">
+            {% if loan_history %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="loanHistoryTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Loan ID</th>
+                                <th>Type</th>
+                                <th>Applied Amount</th>
+                                <th>Approved Amount</th>
+                                <th>Status</th>
+                                <th>Application Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in loan_history %}
+                                <tr>
+                                    <td>{{ loan.loan_id }}</td>
+                                    <td>{{ loan.loan_type.name }}</td>
+                                    <td>Ksh {{ loan.amount_applied }}</td>
+                                    <td>Ksh {{ loan.amount_approved|default:"N/A" }}</td>
+                                    <td><span class="badge bg-secondary">{{ loan.get_status_display }}</span></td>
+                                    <td>{{ loan.application_date|date:"M d, Y" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No past loan history available.</p>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

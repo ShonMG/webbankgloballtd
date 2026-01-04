@@ -113,8 +113,8 @@
                 </div>
                 <div class="stats-section">
                     <div class="stat-item">
-                        <h3>{{ total_members }}</h3>
-                        <p>Total Members</p>
+                        <h3>{{ total_shares }}</h3>
+                        <p>Total Shares</p>
                     </div>
                     <div class="stat-item">
                         <h3>Ksh {{ total_loan_payouts|floatformat:0 }}</h3>
@@ -315,38 +315,44 @@
                 <h2 class="text-center fw-bold mb-5">Hear From Our Members</h2>
                 <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner">
+                        {% for testimonial in testimonials %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-8">
+                                    <div class="card shadow-sm p-4 text-center border-0">
+                                        <div class="d-flex justify-content-center mb-3">
+                                            {% if testimonial.member.profile_picture %}
+                                                <img src="{{ testimonial.member.profile_picture.url }}" class="rounded-circle" alt="{{ testimonial.member.get_full_name }} Photo" style="width: 80px; height: 80px; object-fit: cover;">
+                                            {% else %}
+                                                <img src="https://via.placeholder.com/80x80?text={{ testimonial.member.first_name|first }}{{ testimonial.member.last_name|first }}" class="rounded-circle" alt="Member Photo" style="width: 80px; height: 80px; object-fit: cover;">
+                                            {% endif %}
+                                        </div>
+                                        <p class="lead fst-italic">"{{ testimonial.quote }}"</p>
+                                        <div class="text-warning mb-2">
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= testimonial.rating %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <h5 class="fw-bold">- {{ testimonial.member.get_full_name }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
                         <div class="carousel-item active">
                             <div class="row justify-content-center">
                                 <div class="col-lg-8">
                                     <div class="card shadow-sm p-4 text-center border-0">
-                                        <div class="d-flex justify-content-center mb-3">
-                                            <img src="https://via.placeholder.com/80x80?text=Member+1" class="rounded-circle" alt="Member Photo">
-                                        </div>
-                                        <p class="lead fst-italic">"Joining WebBank Global Ltd was the best financial decision I ever made. The collective investment opportunities have significantly boosted my savings, and the affordable loans are a lifesaver. Truly shared success!"</p>
-                                        <div class="text-warning mb-2">
-                                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-                                        </div>
-                                        <h5 class="fw-bold">- Jane M., Entrepreneur</h5>
+                                        <p class="lead fst-italic">No testimonials available yet.</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="carousel-item">
-                            <div class="row justify-content-center">
-                                <div class="col-lg-8">
-                                    <div class="card shadow-sm p-4 text-center border-0">
-                                        <div class="d-flex justify-content-center mb-3">
-                                            <img src="https://via.placeholder.com/80x80?text=Member+2" class="rounded-circle" alt="Member Photo">
-                                        </div>
-                                        <p class="lead fst-italic">"The transparency and support from the WebBank community are unmatched. I've learned so much and seen my investments grow consistently. It's inspiring to be part of an organization that genuinely cares about our financial independence."</p>
-                                        <div class="text-warning mb-2">
-                                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
-                                        </div>
-                                        <h5 class="fw-bold">- Alex K., Farmer</h5>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>

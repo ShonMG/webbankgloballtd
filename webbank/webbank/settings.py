@@ -35,6 +35,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 if DEBUG:
     ALLOWED_HOSTS.append('webbankglobal.onrender.com')
     ALLOWED_HOSTS.append('0.0.0.0')
+    ALLOWED_HOSTS.append('127.0.0.1')
     
 
 
@@ -73,6 +74,8 @@ INSTALLED_APPS = [
     'governance',
     'audit',
     'reports',
+    'documents',
+    'webbankboard'
 
 ]
 
@@ -175,3 +178,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://webbankglobal.onrender.com',
 ]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Custom Application Settings
+LOAN_TO_SHARE_MULTIPLIER = 3
+WEBBANK_MEMBER_CAP = 12

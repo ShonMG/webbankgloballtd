@@ -26,6 +26,9 @@ urlpatterns = [
     path('contributions/', include('contributions.urls')),
     path('payments/', include('payments.urls')),
     path('profits/', include('profits.urls')),
+    path('governance/', include('governance.urls')), # New: Include governance app URLs
+    path('audit/', include('audit.urls')),
+    path('webbankboard/', include('webbankboard.urls')),
 ]
 
 if settings.DEBUG:

@@ -31,7 +31,7 @@
                     <tr>
                         <td>{{ contribution.date|date:"M d, Y" }}</td>
                         <td>Ksh {{ contribution.amount }}</td>
-                        <td>Paid</td> {# Placeholder for status #}
+                        <td>{{ contribution.status }}</td>
                     </tr>
                     {% empty %}
                     <tr>

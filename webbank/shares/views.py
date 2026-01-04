@@ -1,14 +1,16 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from decimal import Decimal
 import random
 import string
+from django.utils import timezone # Import timezone
 from .models import Share, ShareTransaction, Dividend, ShareConfig
 from .forms import SharePurchaseForm, ShareGoalForm, DividendForm # Import DividendForm
 from accounts.models import User
 from members_amor108.models import Member as Amor108Member # Import Amor108Member
+from loans.models import Loan # Import Loan model
 from django.core import serializers # Import serializers
 from django.contrib.admin.views.decorators import staff_member_required
 
@@ -74,6 +76,26 @@ def shares_dashboard(request):
     overall_target = Decimal('200000.00')
     total_share_cap = Decimal('2000000.00')
 
+    # Calculate monthly progress
+    now = timezone.now()
+    monthly_contributed_value = ShareTransaction.objects.filter(
+        member=amor108_member,
+        transaction_type='purchase',
+        transaction_date__year=now.year,
+        transaction_date__month=now.month
+    ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+
+    monthly_progress_percentage = 0
+    if share.monthly_share_target and share.monthly_share_target > 0:
+        monthly_progress_percentage = (monthly_contributed_value / share.monthly_share_target) * 100
+
+    # Determine if shares are locked (LAW 7 & 8)
+    shares_are_locked = False
+    active_loan_statuses = ['active', 'disbursed']
+
+    if Loan.objects.filter(Q(amor108_member=amor108_member) | Q(guarantors=amor108_member), status__in=active_loan_statuses).exists():
+        shares_are_locked = True
+
     context = {
         'share': share,
         'total_units': share.units,
@@ -84,6 +106,9 @@ def shares_dashboard(request):
         'user_type': user.user_type,
         'overall_target': overall_target,
         'total_share_cap': total_share_cap,
+        'shares_are_locked': shares_are_locked,
+        'monthly_contributed_value': monthly_contributed_value,
+        'monthly_progress_percentage': monthly_progress_percentage,
     }
     
     return render(request, 'shares/shares.html', context)
@@ -95,7 +120,6 @@ def transactions_history(request):
 
     if user.is_staff:
         # Admins should see all transactions or be redirected
-        # Redirecting to admin shares dashboard is a good default
         return redirect('shares:shares_dashboard')
 
     if not hasattr(user, 'amor108_member'):
@@ -213,3 +237,19 @@ def approve_dividend(request, dividend_id):
     messages.info(request, f'Total Net Dividend Distributed: KES {total_distributed_amount:.2f}. Total Tax Deducted: KES {total_tax_deducted:.2f}.')
     
     return redirect('shares:dividend_list')
+
+@login_required
+def buy_shares(request):
+    # This is a placeholder view. Actual implementation would involve a form for amount, payment processing, etc.
+    context = {
+        'active_page': 'buy_shares',
+    }
+    return render(request, 'shares/buy_shares.html', context)
+
+@login_required
+def withdraw_shares(request):
+    # This is a placeholder view. Actual implementation would involve a form for amount, validation, etc.
+    context = {
+        'active_page': 'withdraw_shares',
+    }
+    return render(request, 'shares/withdraw_shares.html', context)

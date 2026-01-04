@@ -2,6 +2,62 @@
 
 {% block title %}Amor108 - Documents & Reports{% endblock %}
 
+{% block dashboard_title %}
+    Documents & Reports
+{% endblock %}
+
 {% block dashboard_content %}
-    {% include 'amor108/_documents.html' %}
+    <div class="row">
+        {# Available Documents #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Available Documents</h6>
+                </div>
+                <div class="card-body">
+                    {% if available_documents %}
+                        <ul class="list-group">
+                            {% for doc in available_documents %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ doc.title }}</strong><br>
+                                        <small class="text-muted">Description: {{ doc.description }} | Date: {{ doc.uploaded_at|date:"M d, Y" }}</small>
+                                    </div>
+                                    <a href="{{ doc.file.url }}" class="btn btn-sm btn-outline-primary" download>View/Download</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No general documents available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Member Reports #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Your Personal Reports</h6>
+                </div>
+                <div class="card-body">
+                    {% if member_reports %}
+                        <ul class="list-group">
+                            {% for report in member_reports %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ report.title }}</strong><br>
+                                        <small class="text-muted">Description: {{ report.description }} | Date: {{ report.uploaded_at|date:"M d, Y" }}</small>
+                                    </div>
+                                    <a href="{{ report.file.url }}" class="btn btn-sm btn-outline-info" download>View/Download</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No personal reports available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

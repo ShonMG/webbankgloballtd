@@ -1,0 +1,26 @@
+{% extends 'base.html' %} {# Assuming a base template exists #}
+{% load crispy_forms_tags %} {# Assuming crispy forms is used for rendering forms #}
+
+{% block title %}Amor108 - Profile Setup{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h4 class="mb-0">Complete Your Amor108 Profile</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Please provide or update your profile details.</p>
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <button type="submit" class="btn btn-primary mt-3">Save Profile</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

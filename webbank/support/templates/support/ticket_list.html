@@ -1,0 +1,51 @@
+{% extends 'amor108/dashboard_base.html' %}
+
+{% block title %}Support Tickets{% endblock %}
+
+{% block dashboard_title %}
+    Your Support Tickets
+{% endblock %}
+
+{% block dashboard_content %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Your Tickets</h6>
+            <a href="{% url 'support:create_ticket' %}" class="btn btn-primary btn-sm">Open New Ticket</a>
+        </div>
+        <div class="card-body">
+            {% if user_tickets %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Subject</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Last Update</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in user_tickets %}
+                            <tr>
+                                <td>{{ ticket.ticket_id }}</td>
+                                <td>{{ ticket.subject }}</td>
+                                <td>{{ ticket.get_category_display }}</td>
+                                <td><span class="badge badge-{% if ticket.status == 'open' %}info{% elif ticket.status == 'in_progress' %}warning{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %}">{{ ticket.get_status_display }}</span></td>
+                                <td><span class="badge badge-{% if ticket.priority == 'high' or ticket.priority == 'urgent' %}danger{% elif ticket.priority == 'medium' %}warning{% else %}info{% endif %}">{{ ticket.get_priority_display }}</span></td>
+                                <td>{{ ticket.updated_at|date:"Y-m-d H:i" }}</td>
+                                <td><a href="{% url 'support:ticket_detail' ticket.pk %}" class="btn btn-sm btn-info">View</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>You have not opened any support tickets yet.</p>
+                <a href="{% url 'support:create_ticket' %}" class="btn btn-primary">Open New Ticket</a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

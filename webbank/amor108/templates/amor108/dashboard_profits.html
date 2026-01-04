@@ -1,7 +1,116 @@
 {% extends 'amor108/dashboard_base.html' %}
 
-{% block title %}Amor108 - Profits{% endblock %}
+{% block title %}Amor108 - Profits & Reinvestment{% endblock %}
+
+{% block dashboard_title %}
+    Profits & Reinvestment
+{% endblock %}
 
 {% block dashboard_content %}
-    {% include 'amor108/_profits.html' %}
+    <div class="row">
+        {# Accrued Profits Summary #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Your Accrued Profits</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Pending Profits for Action:</strong> Ksh {{ accrued_profits }}</p>
+                    {% if can_withdraw %}
+                        <p class="text-success">You are eligible to withdraw your pending profits.</p>
+                    {% else %}
+                        <p class="text-warning">Withdrawal may require approval or certain conditions to be met.</p>
+                        {% if withdrawal_ineligibility_reasons %}
+                            <ul class="text-danger">
+                                {% for reason in withdrawal_ineligibility_reasons %}
+                                    <li>{{ reason }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Action Options #}
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Profit Options</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {# Assuming there's a single pending_profit_pk for the accrued amount to act on #}
+                        {# In a real scenario, you might list all pending profits and have actions per profit #}
+                        {% if accrued_profits > 0 %}
+                            {% for mp in pending_member_profits %} {# Iterate through individual pending profits #}
+                                {% if mp.action == 'PENDING' %}
+                                    {% if can_reinvest %}
+                                        <form method="post" action="{% url 'profits:reinvest_profit' mp.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-primary m-1">Reinvest Ksh {{ mp.net_profit }} ({{ mp.profit_cycle.name }})</button>
+                                        </form>
+                                    {% endif %}
+
+                                    {% if can_withdraw %}
+                                        <form method="post" action="{% url 'profits:withdraw_profit' mp.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-success m-1">Withdraw Ksh {{ mp.net_profit }} ({{ mp.profit_cycle.name }})</button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if not pending_member_profits %}
+                                <p class="text-muted">No pending profits for action.</p>
+                            {% endif %}
+                        {% else %}
+                            <button class="btn btn-primary" disabled>Reinvest Profits</button>
+                            <small class="text-muted">No pending profits to reinvest.</small>
+                            <button class="btn btn-success mt-2" disabled>Withdraw Profits</button>
+                            <small class="text-muted">No pending profits to withdraw.</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Distribution History #}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Profit Distribution History</h6>
+        </div>
+        <div class="card-body">
+            {% if distribution_history %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="profitHistoryTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Cycle</th>
+                                <th>Allocated Profit</th>
+                                <th>Tax</th>
+                                <th>Net Profit</th>
+                                <th>Action</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for profit in distribution_history %}
+                                <tr>
+                                    <td>{{ profit.profit_cycle.name }}</td>
+                                    <td>Ksh {{ profit.allocated_profit }}</td>
+                                    <td>Ksh {{ profit.tax_amount }}</td>
+                                    <td>Ksh {{ profit.net_profit }}</td>
+                                    <td>{{ profit.get_action_display }}</td>
+                                    <td>{{ profit.action_date|default:profit.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No profit distribution history available.</p>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

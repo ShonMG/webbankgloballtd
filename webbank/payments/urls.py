@@ -6,4 +6,5 @@ app_name = 'payments'
 urlpatterns = [
     path('mpesa/callback/', views.mpesa_callback_view, name='mpesa_callback'),
     path('history/', views.PaymentTransactionListView.as_view(), name='payment_history'),
+    path('wallet/', views.WalletDetailView.as_view(), name='wallet_detail'),
 ]

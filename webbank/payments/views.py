@@ -3,12 +3,15 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from decimal import Decimal
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import PaymentTransaction, PaymentGatewayLog
+from .models import PaymentTransaction, PaymentGatewayLog, Wallet, WalletTransaction
 from contributions.models import Contribution, ContributionStatus
 from members_amor108.models import Member as Amor108Member
+from loans.models import Loan, LoanRepayment
+from profits.utils import distribute_interest
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -19,40 +22,18 @@ def mpesa_callback_view(request):
             payload = json.loads(request.body.decode('utf-8'))
             logger.info(f"M-Pesa Callback Received: {json.dumps(payload)}")
 
-            # Save raw payload to PaymentGatewayLog
             gateway_log = PaymentGatewayLog.objects.create(
                 payload=payload,
                 gateway_name='M-Pesa'
             )
 
-            # Process the payload
-            # This part is highly dependent on the actual M-Pesa API payload structure.
-            # Below is a common structure for C2B (Customer to Business) transactions.
-            # You might need to adjust based on your M-Pesa integration (e.g., STK Push, B2C, etc.)
-            
-            # For C2B Standard Payload (Validation/Confirmation URL)
-            transaction_type = payload.get('TransactionType')
             trans_id = payload.get('TransID')
-            trans_time = payload.get('TransTime')
-            trans_amount = payload.get('TransAmount')
-            business_short_code = payload.get('BusinessShortCode')
-            bill_ref_number = payload.get('BillRefNumber') # This is usually the account number
-            invoice_number = payload.get('InvoiceNumber') # Optional
-            org_account_balance = payload.get('OrgAccountBalance') # Optional
-            third_party_trans_id = payload.get('ThirdPartyTransID') # Optional
-            msisdn = payload.get('MSISDN') # Sender's phone number
-            first_name = payload.get('FirstName') # Optional
-            middle_name = payload.get('MiddleName') # Optional
-            last_name = payload.get('LastName') # Optional
+            if not trans_id:
+                logger.error("M-Pesa callback missing transaction ID.")
+                gateway_log.notes = "Callback missing transaction ID."
+                gateway_log.save()
+                return JsonResponse({"ResultCode": 1, "ResultDesc": "Missing Transaction ID"}, status=400)
 
-            # Convert TransTime to a datetime object
-            # M-Pesa TransTime format: YYYYMMDDHHmmss
-            try:
-                transaction_datetime = timezone.datetime.strptime(trans_time, '%Y%m%d%H%M%S').replace(tzinfo=timezone.utc)
-            except (ValueError, TypeError):
-                transaction_datetime = timezone.now()
-            
-            # Check if transaction already exists to prevent duplicates
             if PaymentTransaction.objects.filter(transaction_id=trans_id).exists():
                 logger.warning(f"Duplicate M-Pesa transaction ID received: {trans_id}")
                 gateway_log.notes = "Duplicate transaction ID received."
@@ -60,25 +41,30 @@ def mpesa_callback_view(request):
                 gateway_log.save()
                 return JsonResponse({"ResultCode": 0, "ResultDesc": "Duplicate Transaction ID"})
 
-            # Create PaymentTransaction
+            trans_time_str = payload.get('TransTime')
+            try:
+                transaction_datetime = timezone.datetime.strptime(trans_time_str, '%Y%m%d%H%M%S').replace(tzinfo=timezone.utc)
+            except (ValueError, TypeError):
+                transaction_datetime = timezone.now()
+
             payment_transaction = PaymentTransaction.objects.create(
                 transaction_id=trans_id,
-                amount=Decimal(trans_amount),
-                currency='KSH', # Assuming KSH for M-Pesa
-                status='COMPLETED', # Mark as completed upon successful callback
+                amount=Decimal(payload.get('TransAmount', '0.00')),
+                currency='KSH',
+                status='COMPLETED',
                 payment_method='MPESA_PAYBILL',
-                sender_phone=msisdn,
-                sender_name=f"{first_name or ''} {middle_name or ''} {last_name or ''}".strip(),
-                shortcode=business_short_code,
-                invoice_number=bill_ref_number, # Use BillRefNumber as the invoice/reference
+                sender_phone=payload.get('MSISDN'),
+                sender_name=f"{payload.get('FirstName', '')} {payload.get('MiddleName', '')} {payload.get('LastName', '')}".strip(),
+                shortcode=payload.get('BusinessShortCode'),
+                invoice_number=payload.get('BillRefNumber'),
                 transaction_time=transaction_datetime,
             )
             gateway_log.related_transaction = payment_transaction
             gateway_log.is_processed = True
             gateway_log.save()
 
-            # Attempt to match to a Contribution
-            match_payment_to_contribution(payment_transaction)
+            # Delegate processing to a separate function
+            process_incoming_payment(payment_transaction)
 
             return JsonResponse({"ResultCode": 0, "ResultDesc": "Callback received and processed successfully"})
 
@@ -92,88 +78,128 @@ def mpesa_callback_view(request):
         return JsonResponse({"ResultCode": 1, "ResultDesc": "Invalid request method"}, status=405)
 
 
-def match_payment_to_contribution(payment_transaction):
+def process_incoming_payment(payment_transaction):
     """
-    Attempts to match a PaymentTransaction to an existing Contribution.
-    Logic can be expanded based on business rules (e.g., matching by amount, date, member ID).
+    Processes an incoming payment by depositing it into the member's wallet
+    and then attempting to allocate the funds to outstanding receivables.
     """
-    logger.info(f"Attempting to match payment {payment_transaction.transaction_id} to a contribution.")
+    logger.info(f"Processing incoming payment {payment_transaction.transaction_id}")
 
-    # Get the 'Paid' status for contributions
+    member = None
+    if payment_transaction.invoice_number:
+        try:
+            # Assuming invoice number might be member's username OR a loan ID
+            member = Amor108Member.objects.get(user__username=payment_transaction.invoice_number)
+        except Amor108Member.DoesNotExist:
+            try:
+                loan = Loan.objects.get(loan_id=payment_transaction.invoice_number)
+                member = loan.amor108_member
+            except Loan.DoesNotExist:
+                logger.warning(f"Could not find member or loan matching invoice_number: {payment_transaction.invoice_number}")
+                payment_transaction.notes = f"Failed: No member or loan found for invoice '{payment_transaction.invoice_number}'."
+                payment_transaction.status = 'FAILED'
+                payment_transaction.save()
+                return
+
+    if not member:
+        payment_transaction.notes = "Failed: No member could be identified for this transaction."
+        payment_transaction.status = 'FAILED'
+        payment_transaction.save()
+        logger.warning(f"Payment {payment_transaction.transaction_id} could not be processed: No member identified.")
+        return
+
+    # Get or create the member's wallet
+    wallet, created = Wallet.objects.get_or_create(member=member)
+    if created:
+        logger.info(f"Created wallet for member {member.user.username}")
+
+    # Create a deposit transaction in the wallet
+    wallet_tx = WalletTransaction.objects.create(
+        wallet=wallet,
+        transaction_type='DEPOSIT',
+        amount=payment_transaction.amount,
+        description=f"Deposit from {payment_transaction.payment_method} - Ref: {payment_transaction.transaction_id}",
+        content_object=payment_transaction
+    )
+    
+    # Update wallet balance
+    wallet.balance += payment_transaction.amount
+    wallet.save()
+
+    logger.info(f"Successfully deposited {payment_transaction.amount} into wallet for {member.user.username}. New balance: {wallet.balance}")
+
+    payment_transaction.notes += f" Processed and deposited to wallet {wallet.id}. Wallet tx id: {wallet_tx.id}."
+    payment_transaction.save()
+
+    allocate_funds_for_receivables(wallet)
+
+def allocate_funds_for_receivables(wallet):
+    """
+    Uses a member's wallet balance to pay for outstanding receivables like contributions and loans.
+    Priority: Contributions, then Loan Repayments.
+    """
+    logger.info(f"Allocating funds from wallet {wallet.id} for member {wallet.member.user.username}")
+
+    # 1. Pay pending contributions
     try:
         paid_status = ContributionStatus.objects.get(name='Paid')
+        pending_status = ContributionStatus.objects.filter(name__in=['Pending', 'Awaiting Payment'])
+        if not pending_status.exists() or not paid_status:
+            raise ContributionStatus.DoesNotExist
     except ContributionStatus.DoesNotExist:
-        logger.error("ContributionStatus 'Paid' does not exist. Please create it in admin.")
-        return False
+        logger.error("Required ContributionStatus ('Paid', 'Pending'/'Awaiting Payment') not found.")
+        return
 
-    # A common matching strategy: using invoice_number as member's ID or contribution reference
-    # Assuming invoice_number (BillRefNumber) contains a unique identifier for the member
-    # or a specific contribution reference.
-    if payment_transaction.invoice_number:
-        # Try to find an Amor108Member by their username (which could be the invoice_number)
-        try:
-            member = Amor108Member.objects.get(user__username=payment_transaction.invoice_number)
-            
-            # Check for existing pending contributions for this member and amount
-            # Or create a new contribution if none exists and the payment matches expected behavior
-            
-            # For simplicity, let's assume we create a new contribution upon receiving payment
-            # This logic needs to be refined based on how contributions are pre-created or expected.
-            
-            # If the payment is meant for a specific expected contribution, you'd query for it here
-            # For example: contribution = Contribution.objects.get(member=member, status='PENDING', expected_amount=payment_transaction.amount)
-
-            # If not found, let's assume this payment directly results in a new 'Paid' contribution
-            contribution, created = Contribution.objects.get_or_create(
-                member=member,
-                amount=payment_transaction.amount,
-                date=payment_transaction.transaction_time.date(),
-                defaults={'status': paid_status}
+    pending_contributions = Contribution.objects.filter(member=wallet.member, status__in=pending_status).order_by('date')
+    for contrib in pending_contributions:
+        if wallet.balance >= contrib.amount:
+            WalletTransaction.objects.create(
+                wallet=wallet,
+                transaction_type='CONTRIBUTION',
+                amount=-contrib.amount,
+                description=f"Payment for contribution #{contrib.id}",
+                content_object=contrib
             )
+            wallet.balance -= contrib.amount
+            wallet.save()
+            contrib.status = paid_status
+            contrib.save()
+            logger.info(f"Paid contribution {contrib.id} for {wallet.member.user.username}. New balance: {wallet.balance}")
+        else:
+            break
+
+    # 2. Pay due loan repayments
+    due_repayments = LoanRepayment.objects.filter(
+        loan__amor108_member=wallet.member, 
+        status__in=['due', 'overdue']
+    ).order_by('due_date')
+
+    for repayment in due_repayments:
+        if wallet.balance >= repayment.amount:
+            WalletTransaction.objects.create(
+                wallet=wallet,
+                transaction_type='LOAN_REPAYMENT',
+                amount=-repayment.amount,
+                description=f"Repayment for loan {repayment.loan.loan_id}",
+                content_object=repayment
+            )
+            wallet.balance -= repayment.amount
+            wallet.save()
+
+            repayment.status = 'paid'
+            repayment.payment_date = timezone.now()
+            repayment.save()
             
-            # If created, link payment and update status
-            if created:
-                payment_transaction.related_contribution = contribution
-                payment_transaction.status = 'COMPLETED'
-                payment_transaction.save()
-                logger.info(f"Payment {payment_transaction.transaction_id} successfully created and matched to new contribution {contribution.id}.")
-                return True
-            else:
-                # If a contribution with same member, amount, date exists, update its status
-                # and link if it was pending or initiated.
-                if contribution.status.name != 'Paid':
-                    contribution.status = paid_status
-                    contribution.save()
-                    payment_transaction.related_contribution = contribution
-                    payment_transaction.status = 'COMPLETED'
-                    payment_transaction.save()
-                    logger.info(f"Payment {payment_transaction.transaction_id} matched to existing contribution {contribution.id} and updated status.")
-                    return True
-                else:
-                    logger.info(f"Payment {payment_transaction.transaction_id} found matching paid contribution {contribution.id}. Possible duplicate or already processed.")
-                    payment_transaction.notes += "\nMatched to an already paid contribution."
-                    payment_transaction.save()
-                    return False
+            # Update the parent loan's outstanding balance
+            repayment.loan.save()
 
+            # Distribute the interest component of the repayment
+            distribute_interest(repayment)
 
-        except Amor108Member.DoesNotExist:
-            logger.warning(f"No Amor108Member found with username matching invoice_number: {payment_transaction.invoice_number}")
-            payment_transaction.notes += f"\nNo member found with username '{payment_transaction.invoice_number}'."
-            payment_transaction.status = 'FAILED' # Or 'PENDING_REVIEW'
-            payment_transaction.save()
-            return False
-        except Exception as e:
-            logger.error(f"Error matching payment {payment_transaction.transaction_id} to contribution: {e}", exc_info=True)
-            payment_transaction.notes += f"\nError during matching: {e}"
-            payment_transaction.status = 'FAILED' # Or 'PENDING_REVIEW'
-            payment_transaction.save()
-            return False
-    
-    payment_transaction.notes += "\nNo invoice number provided for matching."
-    payment_transaction.status = 'FAILED' # Or 'PENDING_REVIEW'
-    payment_transaction.save()
-    logger.warning(f"Payment {payment_transaction.transaction_id} could not be matched: No invoice number.")
-    return False
+            logger.info(f"Paid loan repayment {repayment.id} for {wallet.member.user.username}. New balance: {wallet.balance}")
+        else:
+            logger.info("Insufficient wallet balance for loan repayments.")
+            break
 
 
 class PaymentTransactionListView(LoginRequiredMixin, ListView):
@@ -187,4 +213,29 @@ class PaymentTransactionListView(LoginRequiredMixin, ListView):
             member = self.request.user.amor108_member
             return PaymentTransaction.objects.filter(related_contribution__member=member).order_by('-transaction_time')
         return PaymentTransaction.objects.none()
+
+class WalletDetailView(LoginRequiredMixin, DetailView):
+    model = Wallet
+    template_name = 'payments/wallet_detail.html'
+    context_object_name = 'wallet'
+
+    def get_object(self, queryset=None):
+        """
+        Get or create a wallet for the logged-in user.
+        """
+        if hasattr(self.request.user, 'amor108_member'):
+            member = self.request.user.amor108_member
+            wallet, created = Wallet.objects.get_or_create(member=member)
+            if created:
+                logger.info(f"Created wallet for member {member.user.username}")
+            return wallet
+        return None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.object:
+            context['transactions'] = self.object.transactions.all()
+        else:
+            context['transactions'] = []
+        return context
 

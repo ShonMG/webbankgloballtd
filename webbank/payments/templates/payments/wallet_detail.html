@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>My Wallet</h2>
+    
+    {% if wallet %}
+    <div class="card mb-4">
+        <div class="card-header">
+            Wallet Details
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Current Balance: {{ wallet.balance|floatformat:2 }} KSH</h5>
+            <p class="card-text">Wallet for: {{ wallet.member.user.get_full_name }} ({{ wallet.member.user.username }})</p>
+        </div>
+    </div>
+
+    <h4>Transaction History</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.timestamp|date:"M d, Y H:i" }}</td>
+                    <td>{{ transaction.get_transaction_type_display }}</td>
+                    <td>{{ transaction.amount|floatformat:2 }}</td>
+                    <td>{{ transaction.description }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No transactions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        You do not have a wallet associated with your account. Please contact support.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

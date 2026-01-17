@@ -2,6 +2,10 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from contributions.models import Contribution # Assuming contributions app has a Contribution model
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from members_amor108.models import Member as Amor108Member
+from decimal import Decimal
 
 class PaymentTransaction(models.Model):
     STATUS_CHOICES = (
@@ -67,3 +71,39 @@ class PaymentGatewayLog(models.Model):
 
     def __str__(self):
         return f"{self.gateway_name} Log - {self.log_time} - Processed: {self.is_processed}"
+
+class Wallet(models.Model):
+    member = models.OneToOneField(Amor108Member, on_delete=models.CASCADE, related_name='wallet')
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.member.user.username}'s Wallet"
+
+class WalletTransaction(models.Model):
+    TRANSACTION_TYPES = (
+        ('DEPOSIT', 'Deposit'),
+        ('WITHDRAWAL', 'Withdrawal'),
+        ('CONTRIBUTION', 'Contribution Payment'),
+        ('LOAN_DISBURSEMENT', 'Loan Disbursement'),
+        ('LOAN_REPAYMENT', 'Loan Repayment'),
+        ('FEE', 'Fee'),
+    )
+
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(blank=True)
+    
+    # For linking to the source of the transaction (e.g., a Contribution or LoanRepayment)
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    related_object = GenericForeignKey('content_type', 'object_id')
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.get_transaction_type_display()} of {self.amount} for {self.wallet.member.user.username}"

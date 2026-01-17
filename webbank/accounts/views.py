@@ -7,9 +7,10 @@ import time
 import random
 import string
 from django.core.mail import send_mail # Import send_mail
+import json
 from .models import User, Testimonial # Import Testimonial
 from .forms import LoginForm, SignUpForm, ProfileUpdateForm, UserSettingsForm
-from loans.models import Loan
+from loans.models import Loan, LoanType # Import LoanType
 from members.models import Member as WebBankMember
 from shares.models import Share # Import the Share model
 
@@ -27,11 +28,27 @@ def index(request):
     # Fetch approved testimonials
     testimonials = Testimonial.objects.filter(is_approved=True).select_related('member')[:2] # Limit to 2 for carousel
 
+    # Fetch LoanType objects
+    loan_types = LoanType.objects.all()
+    loan_types_json = json.dumps([
+        {
+            'id': lt.id,
+            'name': lt.name,
+            'interest_rate': str(lt.interest_rate),
+            'is_for_non_member': lt.is_for_non_member,
+            'webbank_interest_share': str(lt.webbank_interest_share),
+            'guarantor_interest_share': str(lt.guarantor_interest_share),
+            'member_interest_share': str(lt.member_interest_share),
+        } for lt in loan_types
+    ])
+
     context = {
         'total_shares': total_shares_count,
         'total_loan_payouts': total_loan_payouts,
         'years_active': 5, # Static for now
         'testimonials': testimonials, # Pass testimonials to context
+        'loan_types': loan_types, # Pass loan types to context
+        'loan_types_json': loan_types_json,
     }
     return render(request, 'index.html', context)
 

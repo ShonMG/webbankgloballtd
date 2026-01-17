@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from members_amor108.models import Member as Amor108Member
-from shares.models import Share # Assuming Share model exists for proportional split
+from loans.models import LoanRepayment
 from decimal import Decimal
 
 class ProfitCycle(models.Model):
@@ -58,3 +58,15 @@ class MemberProfit(models.Model):
 
     def __str__(self):
         return f"{self.member.user.username} - {self.net_profit} ({self.get_action_display()}) in {self.profit_cycle.name}"
+
+class InterestDistribution(models.Model):
+    repayment = models.ForeignKey(LoanRepayment, on_delete=models.CASCADE, related_name='interest_distributions')
+    member = models.ForeignKey(Amor108Member, on_delete=models.CASCADE, related_name='interest_earnings', null=True, blank=True)
+    is_webbank_share = models.BooleanField(default=False)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        if self.is_webbank_share:
+            return f"Webbank share of {self.amount} from repayment {self.repayment.id}"
+        return f"{self.member.user.username} earned {self.amount} from repayment {self.repayment.id}"

@@ -7,7 +7,7 @@ from decimal import Decimal
 
 class LoanType(models.Model):
     name = models.CharField(max_length=100)
-    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, help_text="Interest rate as a decimal (e.g., 0.01 for 1% per month)")
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, help_text="Total interest rate as a decimal (e.g., 0.20 for 20%)")
     max_amount = models.DecimalField(max_digits=12, decimal_places=2)
     min_amount = models.DecimalField(max_digits=12, decimal_places=2, default=1000.00)
     max_term_months = models.IntegerField()
@@ -15,6 +15,12 @@ class LoanType(models.Model):
     eligibility_criteria = models.TextField(blank=True, help_text="Criteria for loan eligibility")
     application_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     processing_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    # Fields for interest distribution
+    is_for_non_member = models.BooleanField(default=False, help_text="Check if this loan type is for non-members (guests).")
+    webbank_interest_share = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, help_text="Portion of interest for WebBank (e.g., 0.02 for 2%).")
+    guarantor_interest_share = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, help_text="Portion of interest for the guarantor (e.g., 0.08 for 8%).")
+    member_interest_share = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, help_text="Portion of interest to be distributed among all members (e.g., 0.10 for 10%).")
     
     def __str__(self):
         return self.name
@@ -87,8 +93,16 @@ class Loan(models.Model):
     
     def calculate_monthly_payment(self):
         if self.amount_approved and self.loan_type.interest_rate and self.term_months:
-            monthly_rate = (self.loan_type.interest_rate) / 12 # interest_rate is already a decimal representation of percentage per month
-            # Handle zero interest rate to avoid division by zero or incorrect calculation
+            # For simple interest calculation (like one-month loans)
+            if self.term_months == 1 and not self.loan_type.is_for_non_member:
+                 total_interest = self.amount_approved * self.loan_type.interest_rate
+                 return self.amount_approved + total_interest
+
+            # For amortizing loans (long-term member loans and non-member loans)
+            monthly_rate = self.loan_type.interest_rate / Decimal(12) if self.loan_type.interest_rate < 1 else self.loan_type.interest_rate
+            if self.loan_type.is_for_non_member:
+                monthly_rate = self.loan_type.interest_rate / Decimal(12) # Assuming 20% is annual
+
             if monthly_rate == 0:
                 return round(self.amount_approved / self.term_months, 2)
             
@@ -159,13 +173,18 @@ class Loan(models.Model):
 
 class LoanRepayment(models.Model):
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='repayments')
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_date = models.DateTimeField(auto_now_add=True)
+    principal_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    interest_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    payment_date = models.DateTimeField(null=True, blank=True)
     due_date = models.DateField()
     status = models.CharField(max_length=20, choices=[('paid', 'Paid'), ('due', 'Due'), ('overdue', 'Overdue')])
-    transaction_id = models.CharField(max_length=50, unique=True, null=True, blank=True) # transaction_id can be null/blank if payment is manual
+    transaction_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
     payment_transaction = models.OneToOneField(PaymentTransaction, on_delete=models.SET_NULL, null=True, blank=True, related_name='loan_repayment')
     
+    @property
+    def amount(self):
+        return self.principal_amount + self.interest_amount
+
     def __str__(self):
         return f"Repayment for {self.loan.loan_id} - {self.amount}"
 

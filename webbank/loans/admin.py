@@ -3,8 +3,22 @@ from .models import LoanType, Loan, LoanRepayment, LoanApprovalLog
 
 @admin.register(LoanType)
 class LoanTypeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'interest_rate', 'max_amount', 'min_amount', 'max_term_months')
+    list_display = ('name', 'interest_rate', 'is_for_non_member', 'webbank_interest_share', 'guarantor_interest_share', 'member_interest_share', 'max_term_months')
+    list_filter = ('is_for_non_member',)
     search_fields = ('name',)
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'interest_rate', 'max_amount', 'min_amount', 'max_term_months', 'description', 'eligibility_criteria')
+        }),
+        ('Interest Distribution (For Non-Member Loans)', {
+            'classes': ('collapse',),
+            'fields': ('is_for_non_member', 'webbank_interest_share', 'guarantor_interest_share', 'member_interest_share'),
+        }),
+        ('Fees', {
+            'classes': ('collapse',),
+            'fields': ('application_fee', 'processing_fee'),
+        }),
+    )
 
 @admin.register(Loan)
 class LoanAdmin(admin.ModelAdmin):

@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -283,8 +284,11 @@
                         <div class="mb-4">
                             <label for="loanType" class="form-label fw-bold">Loan Type:</label>
                             <select class="form-select" id="loanType">
-                                <option value="member">Member Loan (5% Interest)</option>
-                                <option value="non-member">Non-Member Loan (8% Interest)</option>
+                                {% for loan_type in loan_types %}
+                                    <option value="{{ loan_type.id }}" data-interest-rate="{{ loan_type.interest_rate }}" data-is-non-member="{{ loan_type.is_for_non_member|lower }}">
+                                        {{ loan_type.name }} ({{ loan_type.interest_rate|multiply:100|floatformat:0 }}% Interest)
+                                    </option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="row mb-4">
@@ -296,6 +300,23 @@
                                 <p class="mb-1 fw-bold">Monthly Repayment:</p>
                                 <h4 class="text-success" id="displayMonthlyRepayment">Ksh 0</h4>
                             </div>
+                        </div>
+                        <div id="interestDistribution" class="d-none">
+                            <p class="mb-1 fw-bold">Interest Distribution:</p>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Webbank (2%)
+                                    <span class="badge bg-primary rounded-pill" id="displayWebbankShare">Ksh 0</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Guarantor (8%)
+                                    <span class="badge bg-primary rounded-pill" id="displayGuarantorShare">Ksh 0</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Members (10%)
+                                    <span class="badge bg-primary rounded-pill" id="displayMembersShare">Ksh 0</span>
+                                </li>
+                            </ul>
                         </div>
                         <div class="mb-4 d-none" id="referralBenefit">
                             <p class="mb-1 fw-bold">Referral Benefit:</p>
@@ -379,25 +400,41 @@
             const displayLoanAmount = document.getElementById('displayLoanAmount');
             const displayInterest = document.getElementById('displayInterest');
             const displayMonthlyRepayment = document.getElementById('displayMonthlyRepayment');
+            const interestDistribution = document.getElementById('interestDistribution');
+            const displayWebbankShare = document.getElementById('displayWebbankShare');
+            const displayGuarantorShare = document.getElementById('displayGuarantorShare');
+            const displayMembersShare = document.getElementById('displayMembersShare');
             const referralBenefit = document.getElementById('referralBenefit');
 
             function calculateLoan() {
                 const amount = parseFloat(loanAmountSlider.value);
-                const loanType = loanTypeSelect.value;
-                let interestRate = 0;
+                const selectedOption = loanTypeSelect.options[loanTypeSelect.selectedIndex];
+                const interestRate = parseFloat(selectedOption.getAttribute('data-interest-rate'));
+                const isNonMember = selectedOption.getAttribute('data-is-non-member') === 'true';
+
                 let referral = false;
 
-                if (loanType === 'member') {
-                    interestRate = 0.01; // 1% per month
-                } else {
-                    interestRate = 0.20; // 20% per month
+                if (isNonMember) {
+                    interestDistribution.classList.remove('d-none');
                     // Simulate a referrer by checking a hypothetical query parameter or cookie
                     // For demo, let's assume a referrer benefit is always present for non-members
                     referral = true; // In a real app, this would be dynamic
+                } else {
+                    interestDistribution.classList.add('d-none');
                 }
 
                 // Simple interest calculation for demonstration
                 const interest = amount * interestRate;
+
+                if (isNonMember) {
+                    const webbankShare = amount * 0.02;
+                    const guarantorShare = amount * 0.08;
+                    const membersShare = amount * 0.10;
+                    displayWebbankShare.textContent = `Ksh ${webbankShare.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    displayGuarantorShare.textContent = `Ksh ${guarantorShare.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                    displayMembersShare.textContent = `Ksh ${membersShare.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                }
+                
                 // Assuming a fixed term for simplicity, e.g., 12 months
                 const monthlyRepayment = (amount + interest) / 12;
 
@@ -405,7 +442,7 @@
                 displayInterest.textContent = `Ksh ${interest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                 displayMonthlyRepayment.textContent = `Ksh ${monthlyRepayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
-                if (referral && loanType === 'non-member') {
+                if (referral && isNonMember) {
                     referralBenefit.classList.remove('d-none');
                 } else {
                     referralBenefit.classList.add('d-none');

@@ -36,7 +36,7 @@ def check_webbank_eligibility_on_pool_change(sender, instance, created, **kwargs
                 # If they were a WebBank member, check their new AMOR108 pool status
                 if not (instance.pool and instance.pool.name.upper() == 'GOLD'):
                     # User's AMOR108 pool is no longer GOLD, revoke WebBank membership
-                    webbank_membership.status = WebBankMembership.StatusChoices.PENDING # Or EXITED, depending on policy
+                    webbank_membership.status = WebBankMembership.StatusChoices.EXITED
                     webbank_membership.save(update_fields=['status'])
                     # You might want to log this or send a notification to the user/admin
-                    print(f"WebBank membership for {user.email} changed to PENDING due to AMOR108 pool downgrade.")
+                    print(f"WebBank membership for {user.email} changed to EXITED due to AMOR108 pool downgrade.")

@@ -9,6 +9,18 @@
         <p class="lead">{{ message }}</p>
         <p>Thank you for your registration. Please wait for an administrator to review and approve your account.</p>
         <p>You will be notified once your account has been approved.</p>
+        
+        <div class="mt-4">
+            <h5>Your Submitted Details:</h5>
+            <ul class="list-unstyled">
+                <li><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</li>
+                <li><strong>Email:</strong> {{ user.email }}</li>
+                {% if member.pool %}
+                <li><strong>Selected Pool:</strong> {{ member.pool.name }}</li>
+                {% endif %}
+            </ul>
+        </div>
+        
         <a href="{% url 'accounts_amor108:logout' %}" class="btn btn-primary mt-3">Logout</a>
     </div>
 </div>

@@ -15,12 +15,14 @@ from accounts.decorators import admin_required, founder_required
 from decimal import Decimal # Import Decimal for monetary values
 from django.http import HttpResponse # Import HttpResponse
 import csv # Import csv module
-from members_amor108.models import Member as Amor108Member
+from members_amor108.models import Member as Amor108Member, MembershipStatus
+from datetime import datetime, timedelta
+
 
 @login_required
 @admin_required
 def pending_amor108_members(request):
-    pending_members = Amor108Member.objects.filter(status__name='pending')
+    pending_members = Amor108Member.objects.filter(status__name='Pending Approval')
     context = {
         'members': pending_members,
         'user_type': request.user.user_type,
@@ -31,7 +33,7 @@ def pending_amor108_members(request):
 @admin_required
 def approve_amor108_member(request, member_id):
     member = get_object_or_404(Amor108Member, id=member_id)
-    member.status = 'approved'
+    member.status = MembershipStatus.objects.get(name='Approved')
     member.user.is_active = True
     member.save()
     member.user.save()
@@ -43,7 +45,7 @@ def approve_amor108_member(request, member_id):
 def reject_amor108_member(request, member_id):
     member = get_object_or_404(Amor108Member, id=member_id)
     user = member.user
-    member.status = 'rejected'
+    member.status = MembershipStatus.objects.get(name='Rejected')
     member.save()
     user.delete()
     messages.error(request, f'Amor108 member {user.username} has been rejected and their account deleted.')
@@ -728,7 +730,6 @@ def share_value_trends_report(request):
             monthly_values[entry['month']] = entry['total_value']
         
         # Format for Chart.js
-        from datetime import datetime
         for month_num in range(1, 13):
             share_value_data.append({
                 'month': datetime(1, month_num, 1).strftime('%b'),
@@ -776,8 +777,6 @@ def audit_log_list(request):
         'title': 'Audit Log',
     }
     return render(request, 'admin_panel/audit_log_list.html', context)
-
-from datetime import datetime, timedelta
 
 @login_required
 @admin_required

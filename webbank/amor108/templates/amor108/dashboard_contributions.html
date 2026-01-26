@@ -43,7 +43,18 @@
                     <h6 class="m-0 font-weight-bold text-primary">Make a Contribution</h6>
                 </div>
                 <div class="card-body">
-                    <p>Easily make your contributions using M-Pesa STK Push.</p>
+                    <div class="card bg-info-subtle text-info border-info mb-3">
+                        <div class="card-body text-center py-3">
+                            <h5 class="card-title mb-2"><i class="bi bi-hourglass-split me-2"></i>Coming soon!</h5>
+                            <p class="card-text small mb-0">We're working to bring you this feature shortly.</p>
+                            <hr>
+                            <h6 class="card-subtitle mb-2 text-info-emphasis">Use the following payment method in the meantime:</h6>
+                            <p class="mb-1 text-start"><strong>PAYBILL NUMBER:</strong> 303030</p>
+                            <p class="mb-1 text-start"><strong>ACCOUNT NUMBER:</strong> 2045711709</p>
+                            <p class="mb-0 text-start"><strong>ACCOUNT NAME:</strong> WEBBANK GLOBAL IMITED</p>
+                        </div>
+                    </div>
+                    {% comment %} <p>Easily make your contributions using M-Pesa STK Push.</p>
                     <form method="POST" action="{% url 'contributions:stk_push_initiate' %}"> {# Updated URL #}
                         {% csrf_token %}
                         <div class="mb-3">
@@ -51,7 +62,7 @@
                             <input type="number" step="0.01" class="form-control" id="id_amount" name="amount" required value="{{ expected_contribution_amount }}"> {# Pre-fill with expected amount #}
                         </div>
                         <button type="submit" class="btn btn-primary">Initiate STK Push</button>
-                    </form>
+                    </form> {% endcomment %}
                 </div>
             </div>
         </div>

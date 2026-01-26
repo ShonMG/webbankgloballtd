@@ -34,7 +34,19 @@
                     <p class="text-muted small">Your credit power is an estimate based on your share value and other factors.</p>
 
                     <h6 class="mt-4">Actions:</h6>
-                    <div class="d-grid gap-2">
+                    <div class="card bg-info-subtle text-info border-info mb-3">
+                        <div class="card-body text-center py-3">
+                            <h5 class="card-title mb-2"><i class="bi bi-hourglass-split me-2"></i>Automatic Buy is coming soon!</h5>
+                            <p class="card-text small mb-0">We're working to bring you this feature shortly.</p>
+                            <hr>
+                            <h6 class="card-subtitle mb-2 text-info-emphasis">Use the following payment method in the meantime:</h6>
+                            <p class="mb-1 text-start"><strong>PAYBILL NUMBER:</strong> 303030</p>
+                            <p class="mb-1 text-start"><strong>ACCOUNT NUMBER:</strong> 2045711709</p>
+                            <p class="mb-0 text-start"><strong>ACCOUNT NAME:</strong> WEBBANK GLOBAL IMITED</p>
+                        </div>
+                    </div>
+
+                    {% comment %} <div class="d-grid gap-2">
                         {% if can_purchase_shares %}
                             <a href="{% url 'shares:buy_shares' %}" class="btn btn-primary">Buy More Shares</a>
                         {% else %}
@@ -48,7 +60,7 @@
                             <button class="btn btn-secondary mt-2" disabled>Cannot Withdraw Shares</button>
                             <small class="text-muted">Shares cannot be withdrawn if you have an active loan or guarantee.</small>
                         {% endif %}
-                    </div>
+                    </div> {% endcomment %}
                 </div>
             </div>
         </div>

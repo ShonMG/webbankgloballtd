@@ -73,12 +73,10 @@
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'index' %}">
-                <svg width="32" height="32" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" class="me-2">
-                    <rect width="36" height="36" rx="8" fill="darkblue"/>
-                    <text x="50%" y="55%" text-anchor="middle" fill="white" font-size="18" font-family="Arial" font-weight="bold" dy=".1em">WB</text>
-                </svg>
-                WebBank
+                <a class="navbar-brand d-flex align-items-center" href="{% url 'index' %}">
+                    <img src="{% static 'webbank/images/webbank.png' %}" alt="WebBank Logo" height="32" class="me-2">
+                    <span class="fw-bold text-primary">WebBank</span>
+                
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -88,9 +86,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'accounts:signin' %}">Sign In</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-primary text-white" href="{% url 'accounts:signup' %}">Register / Join Now</a>
-                    </li>
+                    <a class="nav-link btn btn-primary text-white" href="{% url 'accounts_amor108:signup' %}">Register / Join Now</a>
                 </ul>
             </div>
         </div>
@@ -102,7 +98,7 @@
                 <h1>Empowering to grow as we grow shared wealth, shared success, shared future.</h1>
                 <p>Founded in 2018, Webbank Global Ltd was established with a clear mission: to help individuals and communities grow their finances by pooling resources and investing together. We believe in the power of unity and shared success.</p>
                 <div>
-                    <a href="{% url 'accounts:signup' %}" class="btn btn-primary">Register / Join Now</a>
+                    <a href="{% url 'accounts_amor108:signup' %}" class="btn btn-primary">Register / Join Now</a>
                     <a href="{% url 'accounts:loan_options' %}" class="btn btn-outline-light">Request Loan Options</a>
                     <a href="#about" class="btn btn-secondary">Learn More</a>
                 </div>

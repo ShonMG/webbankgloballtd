@@ -109,11 +109,29 @@ def index(request):
     
     return render(request, 'amor108/index.html', {'signup_form': signup_form})
 
+@login_required
 def pending_approval_view(request):
     """
-    Renders a page informing the user that their account is awaiting approval.
+    Renders a page informing the user that their account is awaiting approval,
+    and provides user and member details for display.
     """
-    return render(request, 'amor108/pending_approval.html', {'message': 'Your account is awaiting approval.'})
+    user = request.user
+    member = None
+    
+    print(f"--- DEBUG in pending_approval_view: request.user = {user} ---")
+    print(f"--- DEBUG in pending_approval_view: hasattr(user, 'amor108_member') = {hasattr(user, 'amor108_member')} ---")
+
+    if hasattr(user, 'amor108_member'):
+        member = user.amor108_member
+    
+    print(f"--- DEBUG in pending_approval_view: member = {member} ---")
+
+    context = {
+        'message': 'Your account is awaiting approval.',
+        'user': user,
+        'member': member,
+    }
+    return render(request, 'amor108/pending_approval.html', context)
 
 def signin(request):
     if request.user.is_authenticated and hasattr(request.user, 'amor108_profile'):

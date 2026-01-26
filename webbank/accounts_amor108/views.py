@@ -25,21 +25,37 @@ class Amor108SignUpView(CreateView):
 
         # Group form choices by category for display
         categorized_membership_choices = defaultdict(list)
-        # Assuming choice.choice_label is formatted as "CATEGORY_NAME: DESCRIPTION"
-        for choice in context['signup_form']['membership_pool']:
-            # Extract category name. Handle cases where ':' might not be present.
-            parts = choice.choice_label.split(':', 1) # Split only on the first colon
-            category_name = parts[0].strip() if parts else "Uncategorized"
-            categorized_membership_choices[category_name].append(choice)
+        
+        try:
+            membership_pool_field = context['signup_form']['membership_pool']
+            if membership_pool_field and hasattr(membership_pool_field, '__iter__'): # Ensure it's iterable
+                for choice in membership_pool_field:
+                    # Extract category name. Handle cases where ':' might not be present.
+                    parts = choice.choice_label.split(':', 1) # Split only on the first colon
+                    category_name = parts[0].strip() if parts else "Uncategorized"
+                    categorized_membership_choices[category_name].append(choice)
+            else:
+                print(f"--- DEBUG: membership_pool field not found or not iterable: {membership_pool_field} ---")
+        except KeyError:
+            print(f"--- DEBUG: 'membership_pool' field not found in signup_form. ---")
+            pass # Handle case where field might not be present (e.g., in a partial form)
         
         context['categorized_membership_choices'] = dict(categorized_membership_choices)
 
         return context
     
     def form_valid(self, form):
-        response = super().form_valid(form)
-        login(self.request, self.object)
-        return response
+        self.object = form.save() # Set self.object to the newly created user
+        messages.success(self.request, 'Registration successful! Your account is awaiting approval.')
+        return redirect(self.get_success_url())
+
+    def form_invalid(self, form):
+        print("--- DEBUG: Amor108SignUpView form_invalid() called ---")
+        print("--- DEBUG: Form errors:", form.errors)
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f"Error in {field}: {error}")
+        return super().form_invalid(form)
 
 class Amor108LoginView(LoginView): # Revert to Django's default LoginView
     authentication_form = Amor108AuthenticationForm # Changed to use custom AuthenticationForm

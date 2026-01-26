@@ -8,7 +8,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webbank.settings')
 django.setup()
 
 from django.contrib.auth import get_user_model
-from pools.models import Pool, Resolution
+from pools.models import Pool
+from governance.models import Resolution
 from accounts_amor108.models import Amor108Profile
 
 User = get_user_model()

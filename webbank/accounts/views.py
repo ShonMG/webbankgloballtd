@@ -131,7 +131,7 @@ def signup(request):
             # Do not log in the user immediately, as their account needs approval
             # login(request, user) # Remove this line
             
-            return redirect('signin') # Redirect to signin page instead of create_profile
+            return redirect('accounts:signin') # Redirect to signin page instead of create_profile
     else:
         form = SignUpForm()
     

@@ -6,7 +6,7 @@ from decimal import Decimal # Import Decimal for monetary values
 from accounts.models import User as CustomUser # Import your custom User model
 from shares.models import Share # Import the Share model
 from members_amor108.models import Member as Amor108Member, MembershipStatus # Import Member and MembershipStatus
-from amor108.models import Pool # Import Pool
+from pools.models import Pool # Import Pool
 from django.db import IntegrityError # Import IntegrityError
 
 class Command(BaseCommand):
@@ -29,20 +29,14 @@ class Command(BaseCommand):
             defaults={'description': 'Member application has been approved.'}
         )
         default_pool, _ = Pool.objects.get_or_create(
-            name='GOLD', # Assuming 'GOLD' is created by create_pools command
-            defaults={'contribution_amount': 10000, 'contribution_frequency': 'monthly'}
+            name='DIAMOND TIER', # Assuming 'GOLD' is created by create_pools command
+            defaults={'contribution_amount': Decimal('10000.00'), 'contribution_frequency': 'MONTHLY', 'member_limit': 10}
         )
 
 
         user_data = [
-            {'username': 'adminuser', 'email': 'admin@example.com', 'user_type': 'admin', 'is_staff': True, 'is_superuser': True},
-            {'username': 'founderuser', 'email': 'founder@example.com', 'user_type': 'founder', 'is_staff': True, 'is_superuser': False},
-            {'username': 'director1', 'email': 'director1@example.com', 'user_type': 'director'},
-            {'username': 'director2', 'email': 'director2@example.com', 'user_type': 'director'},
-            {'username': 'member1', 'email': 'member1@example.com', 'user_type': 'member'},
-            {'username': 'member2', 'email': 'member2@example.com', 'user_type': 'member'},
-            {'username': 'member3', 'email': 'member3@example.com', 'user_type': 'member', 'monthly_share_target': Decimal('5000.00')}, # Example with target
-            {'username': 'guarantor1', 'email': 'guarantor1@example.com', 'user_type': 'guarantor'},
+            {'username': 'hellenachieng', 'email': 'hellenachieng.proassist@gmail.com', 'user_type': 'admin', 'is_staff': True, 'is_superuser': True},
+            
         ]
 
         for data in user_data:
@@ -59,7 +53,7 @@ class Command(BaseCommand):
                     username=username,
                     defaults={
                         'email': email,
-                        'password': 'password123', # Set default password only on creation
+                        'password': 'Hellenachieng123', # Set default password only on creation
                         'user_type': user_type,
                         'is_staff': is_staff,
                         'is_superuser': is_superuser,

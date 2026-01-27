@@ -35,7 +35,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 if DEBUG:
     ALLOWED_HOSTS.append('webbankglobal.onrender.com')
     ALLOWED_HOSTS.append('0.0.0.0')
-    ALLOWED_HOSTS.append('127.0.0.1')
+    
     
 
 

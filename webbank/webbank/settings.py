@@ -115,8 +115,12 @@ WSGI_APPLICATION = 'webbank.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'webbank',
+        'USER': 'amor108',
+        'PASSWORD': 'OZLT7HIxSbU9Yqk3QW4zDMcL95GLNOxX',
+        'HOST': 'dpg-d5s4gqf18n1s73c5st60-a',
+        'PORT': '5432',
     }
 }
 

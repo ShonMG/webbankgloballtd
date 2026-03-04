@@ -92,8 +92,8 @@ def get_recent_activities(member, limit=5):
 
 
 def index(request):
-    if request.user.is_authenticated and hasattr(request.user, 'amor108_profile'):
-        if request.user.amor108_profile.is_approved:
+    if request.user.is_authenticated and hasattr(request.user, 'amor108_member'):
+        if request.user.amor108_member.status and request.user.amor108_member.status.name == 'Approved':
             return redirect('amor108:dashboard')
         else:
             return render(request, 'amor108/pending_approval.html', {'message': 'Your account is awaiting approval.'})
@@ -134,8 +134,8 @@ def pending_approval_view(request):
     return render(request, 'amor108/pending_approval.html', context)
 
 def signin(request):
-    if request.user.is_authenticated and hasattr(request.user, 'amor108_profile'):
-        if request.user.amor108_profile.is_approved:
+    if request.user.is_authenticated and hasattr(request.user, 'amor108_member'):
+        if request.user.amor108_member.status and request.user.amor108_member.status.name == 'Approved':
             return redirect('amor108:dashboard')
         else:
             # If authenticated but not approved, redirect to pending approval page
@@ -152,8 +152,8 @@ def signin(request):
             password = form.cleaned_data['password']
             user = authenticate(request, username=email, password=password)
             if user is not None:
-                if hasattr(user, 'amor108_profile'):
-                    if user.amor108_profile.is_approved:
+                if hasattr(user, 'amor108_member'):
+                    if user.amor108_member.status and user.amor108_member.status.name == 'Approved':
                         login(request, user)
                         return redirect('amor108:dashboard')
                     else:

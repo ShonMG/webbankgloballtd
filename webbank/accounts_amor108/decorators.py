@@ -32,15 +32,11 @@ def non_member_borrower_required(function=None):
 def member_approval_required(function=None):
     """
     Decorator for views that checks if the user is authenticated and their
-    Amor108Profile is approved.
+    Amor108 member status is 'Approved'.
     """
     def check_approval(user):
         if user.is_authenticated:
-            try:
-                amor108_profile = user.amor108_profile
-                if amor108_profile.is_approved:
-                    return True
-            except AttributeError:
-                pass # User might not have an Amor108Profile yet
+            if hasattr(user, 'amor108_member') and user.amor108_member.status and user.amor108_member.status.name == 'Approved':
+                return True
         raise PermissionDenied
     return user_passes_test(check_approval)(function)

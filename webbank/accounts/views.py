@@ -73,11 +73,12 @@ def signin(request):
                     login(request, user)
                     messages.success(request, f'Welcome back, {user.first_name}!')
                     
-                    # Check if the user has an Amor108Profile
-                    if hasattr(user, 'amor108_profile'):
-                        if user.amor108profile.is_approved:
+                    # Check if the user is an Amor108 member
+                    if hasattr(user, 'amor108_member'):
+                        if user.amor108_member.status and user.amor108_member.status.name == 'Approved':
                             return redirect('amor108:dashboard')
                         else:
+                            # Redirect to a pending page, even if status is rejected or something else.
                             return redirect('amor108:pending_approval')
                     
                     # Default redirect for non-Amor108 members or if amor108profile doesn't exist

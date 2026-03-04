@@ -35,6 +35,9 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 if DEBUG:
     ALLOWED_HOSTS.append('webbankglobal.onrender.com')
     ALLOWED_HOSTS.append('0.0.0.0')
+    ALLOWED_HOSTS.append('127.0.0.1')
+    ALLOWED_HOSTS.append('localhost')
+
     
     
 
@@ -114,13 +117,17 @@ WSGI_APPLICATION = 'webbank.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'webbank',
+    #     'USER': 'amor108',
+    #     'PASSWORD': 'OZLT7HIxSbU9Yqk3QW4zDMcL95GLNOxX',
+    #     'HOST': 'dpg-d5s4gqf18n1s73c5st60-a',
+    #     'PORT': '5432',
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'webbank',
-        'USER': 'amor108',
-        'PASSWORD': 'OZLT7HIxSbU9Yqk3QW4zDMcL95GLNOxX',
-        'HOST': 'dpg-d5s4gqf18n1s73c5st60-a',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3', # This defines the path to the database file
     }
 }
 
